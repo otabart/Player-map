@@ -19,6 +19,8 @@ jobs:
       - run: npm test
 
   publish-npm:
+    environment:
+      name: prod
     needs: build
     runs-on: ubuntu-latest
     steps:
