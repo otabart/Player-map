@@ -14,7 +14,8 @@
   },
   "files": ["dist"],
   "scripts": {
-    "build": "vite build"
+    "build": "vite build",
+    "test":""
   },
   "dependencies": {
     "react": "^18.2.0",
