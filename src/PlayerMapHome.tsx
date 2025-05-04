@@ -1,7 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import IntuitionLogo from "./assets/img/logo.svg";
+import RegistrationForm from "./RegistrationForm";
 
 const PlayerMapHome: React.FC = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
   return (
     <div
       style={{
@@ -9,73 +15,137 @@ const PlayerMapHome: React.FC = () => {
         color: "#fff",
         padding: "20px",
         textAlign: "center",
+        border: "4px solid #0078D4",
+        borderRadius: "5px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        maxWidth: "960px",
+        margin: "0 auto",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
+      {/* Lignes horizontales bleues en haut et bas */}
+      <div
+        style={{
+          position: "absolute",
+          top: "0",
+          left: "0",
+          width: "100%",
+          height: "4px",
+          backgroundColor: "#0078D4",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: "0",
+          left: "0",
+          width: "100%",
+          height: "4px",
+          backgroundColor: "#0078D4",
+        }}
+      />
+
       <img
         src={IntuitionLogo}
         alt="Intuition Logo"
-        style={{ width: "300px", marginBottom: "20px" }}
+        style={{ width: "200px", marginBottom: "10px", marginTop: "20px" }}
       />
-      <h1 style={{ fontSize: "2.5em", margin: "0" }}>INTUITION</h1>
-      <h2 style={{ fontSize: "1.5em", margin: "0" }}>
-        BOSS FIGHTERS COMMUNITY PLAYER MAP
-      </h2>
-      <p>
-        At first, there was nothing. And then, suddenly, the whole community
-        appeared!
-      </p>
-      <p>
-        Everything of which the Boss Fighters community would one day be
-        composed, would be born in an instant.
-      </p>
-      <p>A single species of condensed matter, exploding in a vast universe.</p>
-      <p>
-        Although energy would neither be created nor destroyed, the interaction
-        between these newly-created atoms would continue to create something
-        beautiful...
-      </p>
-      <p>
-        What had been separate would become whole again. And what would be
-        created in the process would be even more beautiful than what came
-        before...
-      </p>
-      <p>Our story begins with the atom. The cornerstone of our ecosystem.</p>
-      <p>And our "atoms" start with you!</p>
-      <p>
-        Every contribution will help build our ecosystem and make it healthy...
-      </p>
-      <div
+      <h2
         style={{
-          border: "1px solid #fff",
-          borderRadius: "10px",
-          padding: "10px",
-          marginTop: "20px",
-          display: "inline-block",
+          fontSize: "1.2em",
+          margin: "0 0 20px 0",
+          color: "#FFD32A", // Couleur orange pour le texte BOSS FIGHTERS
         }}
       >
-        <p>
-          Claims in Intuition, also referred to as "Triples" structured in
-          Semantic Triple format:
+        BOSS FIGHTERS COMMUNITY PLAYER MAP
+      </h2>
+
+      <div style={{ maxWidth: "80%", margin: "0 auto" }}>
+        <p style={{ fontSize: "0.9em", lineHeight: "1.5" }}>
+          At first, there was nothing. And then, suddenly, the whole community
+          appeared !
         </p>
-        <p>
-          [Subject] ⇒ [Predicate] ⇒ [Object] (For example, a Triple could be:
-          [SciFi] [is] [Strong Boss])
+        <p style={{ fontSize: "0.9em", lineHeight: "1.5" }}>
+          Everything of which the Boss Fighters community would one day be
+          composed, would be born in an instant.
         </p>
-        <p>This keeps our attestations tidy!</p>
+        <p style={{ fontSize: "0.9em", lineHeight: "1.5" }}>
+          A single species of condensed matter, exploding in a vast universe.
+        </p>
+        <p style={{ fontSize: "0.9em", lineHeight: "1.5" }}>
+          Although energy would neither be created nor destroyed, the
+          interaction between these newly-created atoms would continue to create
+          something beautiful...
+        </p>
+        <p style={{ fontSize: "0.9em", lineHeight: "1.5" }}>
+          What had been separate would become whole again. And what would be
+          created in the process would be even more beautiful than what came
+          before...
+        </p>
+        <p style={{ fontSize: "0.9em", lineHeight: "1.5" }}>
+          Our story begins with the atom. The cornerstone of our ecosystem.
+        </p>
+        <p style={{ fontSize: "0.9em", lineHeight: "1.5" }}>
+          And our "atoms" start with you !
+        </p>
+        <p style={{ fontSize: "0.9em", lineHeight: "1.5" }}>
+          Every contribution will help build our ecosystem and make it
+          healthy...
+        </p>
       </div>
+
+      <div
+        style={{
+          border: "1px solid #FFD32A",
+          borderRadius: "10px",
+          padding: "15px",
+          margin: "20px 0",
+          display: "inline-block",
+          backgroundColor: "rgba(0, 0, 0, 0.3)",
+          width: "80%",
+          maxWidth: "700px",
+        }}
+      >
+        <p
+          style={{ fontSize: "0.9em", margin: "0 0 10px 0", textAlign: "left" }}
+        >
+          Claims in Intuition, also referred to as "Triples" structured in
+          Semantic Triple format :
+        </p>
+        <p
+          style={{ fontSize: "0.9em", margin: "0 0 10px 0", textAlign: "left" }}
+        >
+          [Subject] ⇒ [Predicate] ⇒ [Object] (For example, a triple could be :
+          [SciFi] [is] [strong Boss])
+        </p>
+        <p style={{ fontSize: "0.9em", margin: "0", textAlign: "left" }}>
+          This keeps our attestations tidy !
+        </p>
+      </div>
+
       <button
+        onClick={openModal}
         style={{
           marginTop: "20px",
+          marginBottom: "20px",
           padding: "10px 20px",
-          backgroundColor: "#ffcc00",
+          backgroundColor: "#FFD32A",
+          color: "#000",
           border: "none",
           cursor: "pointer",
           borderRadius: "5px",
           fontSize: "1em",
+          fontWeight: "bold",
         }}
       >
         CREATE YOUR PLAYER
       </button>
+
+      {/* Utilisation du composant RegistrationForm */}
+      <RegistrationForm isOpen={isModalOpen} onClose={closeModal} />
     </div>
   );
 };

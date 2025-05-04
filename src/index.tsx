@@ -1,17 +1,23 @@
-import React from 'react';
-import PlayerMapHome from './PlayerMapHome';
-import RegistrationForm from './RegistationForm';
-import GraphComponent from './GraphComponent';
+import React from "react";
+import PlayerMapHome from "./PlayerMapHome";
+import RegistrationForm from "./RegistrationForm";
+import GraphComponent from "./GraphComponent";
 
 const PlayerMap = () => {
-    return (
-        <>
-            <GraphComponent />
-            <PlayerMapHome />
-            <RegistrationForm />
-        </>
-    );
+  return (
+    <>
+      <GraphComponent />
+      <PlayerMapHome />
+      <RegistrationForm
+        isOpen={false}
+        onClose={function (): void {
+          throw new Error("Function not implemented.");
+        }}
+      />
+    </>
+  );
 };
 
-export default PlayerMap;
 export { PlayerMapHome, RegistrationForm, GraphComponent };
+
+export default PlayerMapHome;
