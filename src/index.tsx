@@ -1,12 +1,13 @@
 import React from "react";
 import PlayerMapHome from "./PlayerMapHome";
 import RegistrationForm from "./RegistrationForm";
+import PlayerMapGraph from "./PlayerMapGraph";
 import GraphComponent from "./GraphComponent";
 
 const PlayerMap = () => {
   return (
     <>
-      <GraphComponent />
+      <PlayerMapGraph />
       <PlayerMapHome />
       <RegistrationForm
         isOpen={false}
@@ -18,6 +19,6 @@ const PlayerMap = () => {
   );
 };
 
-export { PlayerMapHome, RegistrationForm, GraphComponent };
+export { PlayerMapHome, RegistrationForm, PlayerMapGraph, GraphComponent };
 
 export default PlayerMapHome;
