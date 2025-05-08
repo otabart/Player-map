@@ -22,21 +22,16 @@ const PlayerMapHome: React.FC<PlayerMapHomeProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = () => {
-    console.log("Opening modal");
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
-    console.log("Closing modal");
     setIsModalOpen(false);
     if (onClose) onClose();
   };
 
   // Utiliser isOpen externe si fourni, sinon utiliser l'état local
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : isModalOpen;
-
-  // Debug log
-  console.log("PlayerMapHome render:", { isOpen, isModalOpen, externalIsOpen });
 
   return (
     <div

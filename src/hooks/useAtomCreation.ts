@@ -48,8 +48,6 @@ export const useAtomCreation = ({ walletConnected, walletAddress }: UseAtomCreat
 
       // 3. Convertir le hash IPFS en hex pour le contrat
       const hexData = toHex(ipfsHash);
-      console.log('IPFS Hash:', ipfsHash);
-      console.log('Hex Data:', hexData);
 
       // 4. Vérifier si l'atome existe déjà
       // Calculer le hash que le contrat utilisera
@@ -66,7 +64,6 @@ export const useAtomCreation = ({ walletConnected, walletAddress }: UseAtomCreat
 
         // Si l'ID n'est pas 0, l'atome existe déjà
         if (existingAtomId && BigInt(existingAtomId) !== 0n) {
-          console.log('Atom already exists with ID:', existingAtomId);
           return { 
             atomId: BigInt(existingAtomId), 
             ipfsHash 
@@ -85,12 +82,9 @@ export const useAtomCreation = ({ walletConnected, walletAddress }: UseAtomCreat
         args: [hexData],
         value: VALUE_PER_ATOM,
       });
-
-      console.log('Transaction sent:', tx);
       
       // 6. Attendre la confirmation de la transaction
       const receipt = await tx.wait();
-      console.log('Transaction confirmed:', receipt);
 
       // 7. Récupérer l'ID de l'atome créé
       const newAtomId = await walletConnected.readContract({

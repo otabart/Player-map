@@ -90,10 +90,6 @@ const testGraphQLAPI = async (
 
   // Exécuter la requête GraphQL
   try {
-    console.log(`Envoi de requête à ${apiUrl} (${network})`, {
-      query,
-      variables,
-    });
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
@@ -106,7 +102,6 @@ const testGraphQLAPI = async (
     });
 
     const data = await response.json();
-    console.log(`Réponse de ${network}:`, data);
     return data;
   } catch (error) {
     console.error(`Erreur lors de la requête ${network}:`, error);
@@ -493,10 +488,7 @@ const GraphComponent: React.FC<GraphComponentProps> = ({ walletAddress }) => {
               </div>
               <button
                 onClick={() => {
-                  console.log(
-                    "Données complètes testnet by ID:",
-                    testnetAtomByIdData
-                  );
+                
                 }}
                 style={{
                   padding: "4px 10px",

@@ -135,7 +135,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
         image: formData.image || undefined,
       });
 
-      console.log("Atom created:", result);
       setAtomId(result.atomId.toString());
       setCreationSuccess(true);
       setIsLoading(false);
