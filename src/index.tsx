@@ -4,21 +4,12 @@ import RegistrationForm from "./RegistrationForm";
 import PlayerMapGraph from "./PlayerMapGraph";
 import GraphComponent from "./GraphComponent";
 
-const PlayerMap = () => {
-  return (
-    <>
-      <PlayerMapGraph />
-      <PlayerMapHome />
-      <RegistrationForm
-        isOpen={false}
-        onClose={function (): void {
-          throw new Error("Function not implemented.");
-        }}
-      />
-    </>
-  );
-};
+// Types pour export
+export // Exporter tous les types nécessaires ici
+ type {};
 
+// Exporter les composants individuellement
 export { PlayerMapHome, RegistrationForm, PlayerMapGraph, GraphComponent };
 
+// Exporter un composant par défaut
 export default PlayerMapHome;

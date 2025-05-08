@@ -1,4 +1,12 @@
 import { default as React } from 'react';
 
-declare const PlayerMapHome: React.FC;
+interface PlayerMapHomeProps {
+    walletConnected?: any;
+    walletAddress?: string;
+    wagmiConfig?: any;
+    walletHooks?: any;
+    onClose?: () => void;
+    isOpen?: boolean;
+}
+declare const PlayerMapHome: React.FC<PlayerMapHomeProps>;
 export default PlayerMapHome;

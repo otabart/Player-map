@@ -2,11 +2,41 @@ import React, { useState } from "react";
 import IntuitionLogo from "./assets/img/logo.svg";
 import RegistrationForm from "./RegistrationForm";
 
-const PlayerMapHome: React.FC = () => {
+interface PlayerMapHomeProps {
+  walletConnected?: any;
+  walletAddress?: string;
+  wagmiConfig?: any;
+  walletHooks?: any;
+  onClose?: () => void;
+  isOpen?: boolean;
+}
+
+const PlayerMapHome: React.FC<PlayerMapHomeProps> = ({
+  walletConnected,
+  walletAddress,
+  wagmiConfig,
+  walletHooks,
+  onClose,
+  isOpen: externalIsOpen,
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  const openModal = () => {
+    console.log("Opening modal");
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    console.log("Closing modal");
+    setIsModalOpen(false);
+    if (onClose) onClose();
+  };
+
+  // Utiliser isOpen externe si fourni, sinon utiliser l'état local
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : isModalOpen;
+
+  // Debug log
+  console.log("PlayerMapHome render:", { isOpen, isModalOpen, externalIsOpen });
 
   return (
     <div
@@ -144,8 +174,15 @@ const PlayerMapHome: React.FC = () => {
         CREATE YOUR PLAYER
       </button>
 
-      {/* Utilisation du composant RegistrationForm */}
-      <RegistrationForm isOpen={isModalOpen} onClose={closeModal} />
+      {/* Créer une instance séparée du RegistrationForm contrôlée localement */}
+      <RegistrationForm
+        isOpen={isModalOpen} // Utiliser l'état local ici, pas isOpen
+        onClose={closeModal}
+        walletConnected={walletConnected}
+        walletAddress={walletAddress}
+        wagmiConfig={wagmiConfig}
+        walletHooks={walletHooks}
+      />
     </div>
   );
 };
