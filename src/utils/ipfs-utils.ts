@@ -1,35 +1,48 @@
-const pinataJwt = import.meta.env.VITE_PINATA_JWT_KEY
+import axios from 'axios'
+import { getAuthHeader, isAuthenticated } from './auth'
+import { getConfig } from './config'
+
+interface IpfsHashResponse {
+  ipfs_hash: string
+  http_url: string
+}
 
 export const hashDataToIPFS = async (data: any) => {
-  if (!pinataJwt) {
-    throw new Error('PINATA_JWT_KEY is not configured')
-  }
+  try {
+    // Vérifier si l'utilisateur est authentifié
+    if (!isAuthenticated()) {
+      throw new Error("Vous devez être connecté pour envoyer des données à IPFS")
+    }
 
-  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' })
-  const formData = new FormData()
-  formData.append('file', blob)
+    // La fonction getConfig() lancera une erreur si la configuration n'est pas initialisée
+    const { apiUrl } = getConfig();
+    
+    const url = `${apiUrl}/ipfs/hash_data`;
+    console.log('Hashing data to:', url);
 
-  const response = await fetch(
-    'https://api.pinata.cloud/pinning/pinFileToIPFS',
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${pinataJwt}`,
-      },
-      body: formData,
-    },
-  )
-
-  if (!response.ok) {
-    throw new Error(
-      'Failed to upload to IPFS. Please check your PINATA_JWT and try again.',
+    const response = await axios.post<IpfsHashResponse>(
+      url,
+      { data },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': getAuthHeader()
+        }
+      }
     )
-  }
 
-  const ipfsResult = await response.json()
-
-  return {
-    value: data,
-    ipfsHash: `ipfs://${ipfsResult.IpfsHash}`,
+    return {
+      ipfsHash: response.data.ipfs_hash,
+      httpUrl: response.data.http_url
+    }
+  } catch (error) {
+    // Si l'erreur vient de getConfig(), on la réexpose clairement
+    if (error instanceof Error && error.message.includes('Configuration Player-map non initialisée')) {
+      console.error('Erreur de configuration Player-map:', error.message);
+      throw new Error("Erreur de configuration: Initialisez la bibliothèque Player-map avec PlayerMapConfig.init() avant utilisation");
+    }
+    
+    console.error('Erreur lors du hachage de données vers IPFS:', error)
+    throw error;
   }
 } 

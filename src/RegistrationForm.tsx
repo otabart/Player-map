@@ -369,33 +369,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
                     >
                       Preview of the image:
                     </p>
-                    <div
-                      style={{
-                        width: "80px",
-                        height: "80px",
-                        borderRadius: "50%",
-                        overflow: "hidden",
-                        border: "2px solid #FFD32A",
-                        margin: "0 auto",
-                      }}
-                    >
-                      <img
-                        src={
-                          isIpfsUrl(formData.image)
-                            ? ipfsToHttpUrl(formData.image)
-                            : formData.image
-                        }
-                        alt="Aperçu"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
-                      />
-                    </div>
+                    <PreviewImage src={formData.image} />
                   </div>
                 )}
               </div>
@@ -423,6 +397,37 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
         )}
       </div>
     </div>
+  );
+};
+
+const PreviewImage = ({ src }: { src: string }) => {
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadImage = async () => {
+      if (isIpfsUrl(src)) {
+        const httpUrl = await ipfsToHttpUrl(src);
+        setImageUrl(httpUrl);
+      } else {
+        setImageUrl(src);
+      }
+    };
+
+    loadImage();
+  }, [src]);
+
+  if (!imageUrl) return <div>Loading image...</div>;
+
+  return (
+    <img
+      src={imageUrl}
+      alt="preview"
+      style={{
+        width: "100%",
+        maxHeight: "150px",
+        objectFit: "contain",
+      }}
+    />
   );
 };
 

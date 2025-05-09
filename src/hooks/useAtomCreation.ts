@@ -39,8 +39,8 @@ export const useAtomCreation = ({ walletConnected, walletAddress }: UseAtomCreat
 
       // Transformer les URL IPFS en URL HTTP pour les images
       if (atomData.image && isIpfsUrl(atomData.image)) {
-        // Convertir l'URL IPFS en URL HTTP pour que l'image s'affiche correctement
-        atomData.image = ipfsToHttpUrl(atomData.image);
+        // Convertir l'URL IPFS en URL HTTP de façon asynchrone
+        atomData.image = await ipfsToHttpUrl(atomData.image);
       }
 
       // 2. Envoyer les données à IPFS via Pinata
