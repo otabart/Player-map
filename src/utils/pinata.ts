@@ -95,7 +95,7 @@ export const ipfsToHttpUrl = async (ipfsUrl: string): Promise<string> => {
       }
     }
     
-    const hash = ipfsUrl.replace('ipfs://', '')
+  const hash = ipfsUrl.replace('ipfs://', '')
     return `https://${gatewayUrl}/ipfs/${hash}`
   } catch (error) {
     // Si l'erreur vient de getConfig(), on la réexpose clairement

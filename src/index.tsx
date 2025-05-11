@@ -3,6 +3,7 @@ import PlayerMapHome from "./PlayerMapHome";
 import RegistrationForm from "./RegistrationForm";
 import PlayerMapGraph from "./PlayerMapGraph";
 import GraphComponent from "./GraphComponent";
+import PlayerCreationForm from "./PlayerCreationForm";
 import {
   setAuthToken,
   getAuthToken,
@@ -17,7 +18,13 @@ export interface PlayerMapConfigType {
 }
 
 // Exporter les composants individuellement
-export { PlayerMapHome, RegistrationForm, PlayerMapGraph, GraphComponent };
+export {
+  PlayerMapHome,
+  RegistrationForm,
+  PlayerMapGraph,
+  GraphComponent,
+  PlayerCreationForm,
+};
 
 // Exporter la configuration avec types explicites
 export const PlayerMapConfig = {

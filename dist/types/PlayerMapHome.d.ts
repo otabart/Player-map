@@ -7,6 +7,7 @@ interface PlayerMapHomeProps {
     walletHooks?: any;
     onClose?: () => void;
     isOpen?: boolean;
+    onCreatePlayer?: () => void;
 }
 declare const PlayerMapHome: React.FC<PlayerMapHomeProps>;
 export default PlayerMapHome;

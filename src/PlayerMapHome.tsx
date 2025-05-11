@@ -9,6 +9,7 @@ interface PlayerMapHomeProps {
   walletHooks?: any;
   onClose?: () => void;
   isOpen?: boolean;
+  onCreatePlayer?: () => void;
 }
 
 const PlayerMapHome: React.FC<PlayerMapHomeProps> = ({
@@ -18,6 +19,7 @@ const PlayerMapHome: React.FC<PlayerMapHomeProps> = ({
   walletHooks,
   onClose,
   isOpen: externalIsOpen,
+  onCreatePlayer,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -32,6 +34,17 @@ const PlayerMapHome: React.FC<PlayerMapHomeProps> = ({
 
   // Utiliser isOpen externe si fourni, sinon utiliser l'état local
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : isModalOpen;
+
+  // Fonction pour gérer le clic sur le bouton de création de joueur
+  const handleCreatePlayer = () => {
+    if (onCreatePlayer) {
+      // Si un gestionnaire externe est fourni, l'utiliser
+      onCreatePlayer();
+    } else {
+      // Sinon, ouvrir le modal standard
+      openModal();
+    }
+  };
 
   return (
     <div
@@ -152,7 +165,7 @@ const PlayerMapHome: React.FC<PlayerMapHomeProps> = ({
       </div>
 
       <button
-        onClick={openModal}
+        onClick={handleCreatePlayer}
         style={{
           marginTop: "20px",
           marginBottom: "20px",

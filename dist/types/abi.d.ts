@@ -1,6 +1,7 @@
 export declare const ATOM_CONTRACT_ADDRESS: string;
-export declare const VALUE_PER_ATOM: bigint;
 export declare const ATOM_CONTRACT_CHAIN_ID: number;
+export declare const VALUE_PER_ATOM: bigint;
+export declare const VALUE_PER_TRIPLE: bigint;
 export declare const atomABI: ({
     type: string;
     name: string;
