@@ -2,12 +2,11 @@ import { default as PlayerMapHome } from './PlayerMapHome';
 import { default as RegistrationForm } from './RegistrationForm';
 import { default as PlayerMapGraph } from './PlayerMapGraph';
 import { default as GraphComponent } from './GraphComponent';
-import { default as PlayerCreationForm } from './PlayerCreationForm';
 
 export interface PlayerMapConfigType {
     apiUrl: string;
 }
-export { PlayerMapHome, RegistrationForm, PlayerMapGraph, GraphComponent, PlayerCreationForm, };
+export { PlayerMapHome, RegistrationForm, PlayerMapGraph, GraphComponent, };
 export declare const PlayerMapConfig: {
     /**
      * Initialise la configuration de la bibliothèque Player-map

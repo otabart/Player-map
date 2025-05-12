@@ -18,7 +18,6 @@ export const hashDataToIPFS = async (data: any) => {
     const { apiUrl } = getConfig();
     
     const url = `${apiUrl}/ipfs/hash_data`;
-    console.log('Hashing data to:', url);
 
     const response = await axios.post<IpfsHashResponse>(
       url,

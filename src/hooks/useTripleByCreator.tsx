@@ -76,11 +76,6 @@ export const fetchTriplesByCreator = async (
   const url = API_URLS[network];
   const variables = { creatorId, predicateId, objectId };
 
-  console.log(
-    `[fetchTriplesByCreator] Requête directe vers ${url} avec variables:`,
-    variables
-  );
-
   try {
     const response = await fetch(url, {
       method: "POST",
@@ -95,8 +90,6 @@ export const fetchTriplesByCreator = async (
     });
 
     const result = await response.json();
-    console.log(`[fetchTriplesByCreator] Réponse brute:`, result);
-
     if (result.errors) {
       throw new Error(result.errors[0]?.message || "Erreur GraphQL inconnue");
     }
@@ -128,10 +121,6 @@ export const useTripleByCreator = (
         setLoading(false);
         return;
       }
-
-      console.log(
-        `[useTripleByCreator] Démarrage de la requête pour creatorId=${creatorId}, predicateId=${predicateId}, objectId=${objectId} sur le réseau ${network}`
-      );
 
       try {
         const response = await fetchTriplesByCreator(

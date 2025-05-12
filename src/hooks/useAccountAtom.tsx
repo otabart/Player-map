@@ -27,11 +27,6 @@ export const fetchAccountAtom = async (
   const url = API_URLS[network];
   const variables = { accountId };
 
-  console.log(
-    `[fetchAccountAtom] Requête directe vers ${url} avec variables:`,
-    variables
-  );
-
   try {
     const response = await fetch(url, {
       method: "POST",
@@ -45,7 +40,6 @@ export const fetchAccountAtom = async (
     });
 
     const result = await response.json();
-    console.log(`[fetchAccountAtom] Réponse brute:`, result);
 
     if (result.errors) {
       throw new Error(result.errors[0]?.message || "Erreur GraphQL inconnue");
@@ -76,10 +70,6 @@ export const useAccountAtom = (
         setLoading(false);
         return;
       }
-
-      console.log(
-        `[useAccountAtom] Démarrage de la requête pour accountId=${accountId} sur le réseau ${network}`
-      );
 
       try {
         const response = await fetchAccountAtom(accountId, network);

@@ -34,11 +34,6 @@ export const fetchAtomsByCreator = async (
   const url = API_URLS[network];
   const variables = { creatorId };
 
-  console.log(
-    `[fetchAtomsByCreator] Requête directe vers ${url} avec variables:`,
-    variables
-  );
-
   try {
     const response = await fetch(url, {
       method: "POST",
@@ -53,8 +48,7 @@ export const fetchAtomsByCreator = async (
     });
 
     const result = await response.json();
-    console.log(`[fetchAtomsByCreator] Réponse brute:`, result);
-
+    
     if (result.errors) {
       throw new Error(result.errors[0]?.message || "Erreur GraphQL inconnue");
     }
@@ -84,10 +78,6 @@ export const useAtomsByCreator = (
         setLoading(false);
         return;
       }
-
-      console.log(
-        `[useAtomsByCreator] Démarrage de la requête pour creatorId=${creatorId} sur le réseau ${network}`
-      );
 
       try {
         const response = await fetchAtomsByCreator(creatorId, network);

@@ -50,7 +50,6 @@ export const createClient = (network: Network = Network.MAINNET): ReturnType<typ
     },
     token: undefined // Assuming token is optional and can be undefined
   };
-  console.log(`[createClient] Creating client for network ${network} with URL: ${options.url}`);
   return createServerClient(options);
 };
 

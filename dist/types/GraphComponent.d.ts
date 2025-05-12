@@ -8,6 +8,7 @@ interface GraphComponentProps {
     isOpen?: boolean;
     onClose?: () => void;
     onCreatePlayer?: () => void;
+    onConnectWallet?: () => void;
 }
 declare const GraphComponent: React.FC<GraphComponentProps>;
 export default GraphComponent;

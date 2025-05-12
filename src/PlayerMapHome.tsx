@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import IntuitionLogo from "./assets/img/logo.svg";
-import RegistrationForm from "./RegistrationForm";
 
 interface PlayerMapHomeProps {
   walletConnected?: any;
@@ -21,28 +20,13 @@ const PlayerMapHome: React.FC<PlayerMapHomeProps> = ({
   isOpen: externalIsOpen,
   onCreatePlayer,
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const openModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    if (onClose) onClose();
-  };
-
-  // Utiliser isOpen externe si fourni, sinon utiliser l'état local
-  const isOpen = externalIsOpen !== undefined ? externalIsOpen : isModalOpen;
+  // Vérifier si l'utilisateur a un wallet connecté pour l'affichage conditionnel
+  const isUserConnected = walletConnected && (walletAddress || (walletConnected.account && walletConnected.account.address));
 
   // Fonction pour gérer le clic sur le bouton de création de joueur
   const handleCreatePlayer = () => {
     if (onCreatePlayer) {
-      // Si un gestionnaire externe est fourni, l'utiliser
       onCreatePlayer();
-    } else {
-      // Sinon, ouvrir le modal standard
-      openModal();
     }
   };
 
@@ -181,16 +165,6 @@ const PlayerMapHome: React.FC<PlayerMapHomeProps> = ({
       >
         CREATE YOUR PLAYER
       </button>
-
-      {/* Créer une instance séparée du RegistrationForm contrôlée localement */}
-      <RegistrationForm
-        isOpen={isModalOpen} // Utiliser l'état local ici, pas isOpen
-        onClose={closeModal}
-        walletConnected={walletConnected}
-        walletAddress={walletAddress}
-        wagmiConfig={wagmiConfig}
-        walletHooks={walletHooks}
-      />
     </div>
   );
 };

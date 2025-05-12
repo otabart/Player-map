@@ -30,7 +30,6 @@ export const uploadToPinata = async (file: File): Promise<string> => {
     const { apiUrl } = getConfig();
     
     const url = `${apiUrl}/ipfs/upload_file`;
-    console.log('Uploading to:', url);
 
     const response = await axios.post<IpfsResponse>(
       url,

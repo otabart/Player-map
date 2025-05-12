@@ -8,7 +8,7 @@ export type IpfsAtom = {
 export type IpfsAtomInput = {
     name: string;
     description?: string;
-    image?: string;
+    image?: string | undefined;
 };
 export interface UseAtomCreationProps {
     walletConnected?: any;

@@ -28,7 +28,13 @@ export const useBatchCreateTriple = ({ walletConnected, walletAddress, publicCli
     try {
       // Choisir le client approprié pour la lecture
       const readClient = publicClient || walletConnected;
-      
+
+      // Vérifier que le client a bien la méthode readContract
+      if (!readClient || typeof readClient.readContract !== 'function') {
+        console.warn('No valid read client available to check if triple exists');
+        return false;
+      }
+
       // Vérifier si le triple existe déjà
       const exists = await readClient.readContract({
         address: ATOM_CONTRACT_ADDRESS,
@@ -40,9 +46,9 @@ export const useBatchCreateTriple = ({ walletConnected, walletAddress, publicCli
       return exists;
     } catch (error) {
       console.error("Error checking if triple exists:", error);
-      
+
       // Si la première tentative échoue et que nous avons un publicClient différent, réessayer
-      if (publicClient && publicClient !== walletConnected) {
+      if (publicClient && publicClient !== walletConnected && typeof publicClient.readContract === 'function') {
         try {
           const exists = await publicClient.readContract({
             address: ATOM_CONTRACT_ADDRESS,
@@ -55,7 +61,7 @@ export const useBatchCreateTriple = ({ walletConnected, walletAddress, publicCli
           console.error("Second attempt failed when checking if triple exists:", e);
         }
       }
-      
+
       return false;
     }
   };
@@ -72,15 +78,6 @@ export const useBatchCreateTriple = ({ walletConnected, walletAddress, publicCli
       const predicateIds = triples.map((t) => t.predicateId);
       const objectIds = triples.map((t) => t.objectId);
 
-      console.log('Creating batch triples...', { 
-        address: ATOM_CONTRACT_ADDRESS, 
-        count: triples.length,
-        subjectIds: subjectIds.map(id => id.toString()),
-        predicateIds: predicateIds.map(id => id.toString()),
-        objectIds: objectIds.map(id => id.toString()),
-        value: VALUE_PER_TRIPLE * BigInt(triples.length)
-      });
-
       // Appel au contrat
       const txHash = await walletConnected.writeContract({
         address: ATOM_CONTRACT_ADDRESS,
@@ -90,8 +87,6 @@ export const useBatchCreateTriple = ({ walletConnected, walletAddress, publicCli
         value: VALUE_PER_TRIPLE * BigInt(triples.length), // Valeur pour chaque triple
       });
 
-      console.log('Transaction hash:', txHash);
-      
       // Attendre la confirmation en utilisant une méthode compatible
       let receipt;
       if (walletConnected.waitForTransactionReceipt) {
@@ -102,11 +97,8 @@ export const useBatchCreateTriple = ({ walletConnected, walletAddress, publicCli
         receipt = await txHash.wait();
       } else {
         // Attente passive si aucune méthode n'est disponible
-        console.log('No wait method available, waiting 3 seconds...');
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
-
-      console.log("Batch triple creation successful:", receipt);
 
       return {
         hash: typeof txHash === 'string' ? txHash : txHash.hash,
@@ -120,8 +112,7 @@ export const useBatchCreateTriple = ({ walletConnected, walletAddress, publicCli
 
   // Fonction spécifique pour créer les triples de joueur
   const createPlayerTriples = async (playerAtomId: bigint): Promise<any> => {
-    console.log(`Creating player triples for atom ID: ${playerAtomId}`);
-    
+
     // Création des triples spécifiques pour le joueur
     const triplesToCreate: TripleToCreate[] = [
       // Premier triple - is_player standard
@@ -137,10 +128,6 @@ export const useBatchCreateTriple = ({ walletConnected, walletAddress, publicCli
         objectId: PLAYER_TRIPLE_TYPES.HAS_LEVEL.objectId,
       }
     ];
-
-    console.log("Création de 2 triples pour le joueur:", triplesToCreate.map(t => 
-      `${t.subjectId.toString()} => ${t.predicateId.toString()} => ${t.objectId.toString()}`
-    ));
 
     return batchCreateTriple(triplesToCreate);
   };

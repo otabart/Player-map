@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Network, API_URLS } from "./hooks/useAtomData";
 import { useTripleByCreator } from "./hooks/useTripleByCreator";
+import PlayerMapHome from "./PlayerMapHome";
+import PlayerMapGraph from "./PlayerMapGraph";
+import RegistrationForm from "./RegistrationForm";
 
 interface GraphComponentProps {
   walletConnected?: boolean;
@@ -10,17 +13,35 @@ interface GraphComponentProps {
   isOpen?: boolean;
   onClose?: () => void;
   onCreatePlayer?: () => void;
+  onConnectWallet?: () => void;
 }
 
 const GraphComponent: React.FC<GraphComponentProps> = ({
   walletConnected = false,
   walletAddress = "",
+  wagmiConfig,
+  walletHooks,
+  onClose,
   onCreatePlayer,
+  onConnectWallet,
 }) => {
   // État pour suivre le réseau actuel (par défaut testnet)
   const [network, setNetwork] = useState<Network>(Network.TESTNET);
+  
+  // État local pour le formulaire d'inscription
+  const [isRegistrationFormOpen, setIsRegistrationFormOpen] = useState(false);
+  
+  // État pour la détection du wallet (plus fiable)
+  const [isWalletReady, setIsWalletReady] = useState(false);
 
   const lowerCaseAddress = walletAddress ? walletAddress.toLowerCase() : "";
+
+  // Vérifier si le wallet est réellement connecté
+  useEffect(() => {
+    // Considérer qu'un wallet est connecté s'il y a une adresse non vide
+    const hasConnectedWallet = Boolean(walletAddress && walletAddress !== "");
+    setIsWalletReady(hasConnectedWallet);
+  }, [walletAddress]);
 
   // Étape unique: Vérifier si l'utilisateur a un Player atom sur le jeu
   const {
@@ -29,92 +50,81 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
     triples: playerTriples,
   } = useTripleByCreator(lowerCaseAddress, 24442, 24441, network);
 
-  // Si wallet n'est pas connecté, on affiche un message simple
-  if (!walletConnected || !walletAddress) {
-    return (
-      <div
-        className="player-map-container"
-        style={{
-          margin: "20px",
-          padding: "30px",
-          borderRadius: "8px",
-          backgroundColor: "#1a1a2e",
-          color: "#fff",
-          textAlign: "center",
-        }}
-      >
-        <h2 style={{ color: "#6c5ce7", marginBottom: "20px" }}>Player Map</h2>
-        <div
-          style={{
-            padding: "30px",
-            backgroundColor: "#151525",
-            borderRadius: "6px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <p style={{ fontSize: "18px", marginBottom: "20px" }}>
-            Connectez votre portefeuille pour accéder à la Player Map
-          </p>
-          <button
-            style={{
-              padding: "12px 24px",
-              backgroundColor: "#6c5ce7",
-              color: "#fff",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontSize: "16px",
-            }}
-            disabled={true}
-          >
-            Connecter Wallet
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Déterminer le statut de l'utilisateur
+  // Vérifie si l'utilisateur a un player atom
   const hasPlayerAtom = playerTriples.length > 0;
   const isLoading = tripleLoading;
   const hasError = tripleError;
 
-  // Gérer l'état de chargement
-  if (isLoading) {
+  // Fonction pour gérer le clic sur le bouton Create Player dans notre composant
+  const handleCreatePlayer = useCallback(() => {
+    
+    // Si une fonction externe existe, appeler d'abord cette fonction
+    if (onCreatePlayer) {
+      onCreatePlayer();
+    }
+    
+    // Dans tous les cas, ouvrir notre formulaire interne
+    setIsRegistrationFormOpen(true);
+  }, [onCreatePlayer]);
+
+  // Fonction pour fermer le formulaire d'inscription
+  const handleCloseRegistrationForm = useCallback(() => {
+    setIsRegistrationFormOpen(false);
+    if (onClose) {
+      onClose();
+    }
+  }, [onClose]);
+
+  // Fonction pour gérer la connexion du wallet
+  const handleConnectWallet = useCallback(() => {
+    if (onConnectWallet) {
+      onConnectWallet();
+    }
+  }, [onConnectWallet]);
+
+  // Si en chargement, afficher un indicateur de chargement
+  if (isLoading && isWalletReady) {
     return (
       <div
-        className="player-map-container"
         style={{
-          margin: "20px",
-          padding: "30px",
-          borderRadius: "8px",
-          backgroundColor: "#1a1a2e",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          backgroundColor: "#101020",
           color: "#fff",
         }}
       >
-        <h2 style={{ color: "#6c5ce7", marginBottom: "20px" }}>Player Map</h2>
-        <div
-          style={{
-            padding: "20px",
-            backgroundColor: "#151525",
-            borderRadius: "6px",
-            textAlign: "center",
-          }}
-        >
-          <p>Chargement des données joueur...</p>
+        <div style={{ textAlign: "center" }}>
+          <h2 style={{ color: "#6c5ce7", marginBottom: "20px" }}>Uploading datas playeur...</h2>
+          <div 
+            style={{ 
+              width: "50px", 
+              height: "50px", 
+              border: "5px solid #151525", 
+              borderTop: "5px solid #6c5ce7", 
+              borderRadius: "50%",
+              margin: "0 auto",
+              animation: "spin 1s linear infinite"
+            }} 
+          />
+          <style>
+            {`
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `}
+          </style>
         </div>
       </div>
     );
   }
 
-  // Gérer les erreurs
-  if (hasError) {
+  // Si erreur, afficher le message d'erreur
+  if (hasError && isWalletReady) {
     return (
       <div
-        className="player-map-container"
         style={{
           margin: "20px",
           padding: "30px",
@@ -132,151 +142,51 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
             color: "#ff6b6b",
           }}
         >
-          <h3>Erreur lors du chargement des données</h3>
-          <p>{tripleError?.message || "Erreur inconnue"}</p>
+          <h3>Error to uploading datas</h3>
+          <p>{tripleError?.message || "Unknow error"}</p>
         </div>
       </div>
     );
   }
 
-  // Interface principale basée sur l'état de l'utilisateur
+  // Logique principale d'affichage
   return (
-    <div
-      className="player-map-container"
-      style={{
-        margin: "20px",
-        padding: "30px",
-        borderRadius: "8px",
-        backgroundColor: "#1a1a2e",
-        color: "#fff",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-        }}
-      >
-        <h2 style={{ color: "#6c5ce7", margin: 0 }}>Player Map</h2>
-        <select
-          value={network}
-          onChange={(e) => setNetwork(e.target.value as Network)}
+    <div style={{ position: "relative", width: "100%", height: "100%" }}>
+      {/* Modal "Connect wallet first" - s'affiche par-dessus PlayerMapHome quand wallet non connecté */}
+      {!isWalletReady && (
+        <div 
           style={{
-            padding: "5px 10px",
-            backgroundColor: "#151525",
-            color: "#fff",
-            border: "1px solid #333",
-            borderRadius: "4px",
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            backdropFilter: "blur(5px)",
+            zIndex: 1000
           }}
         >
-          <option value={Network.MAINNET}>Mainnet</option>
-          <option value={Network.TESTNET}>Testnet</option>
-        </select>
-      </div>
-
-      <div style={{ marginBottom: "10px", fontSize: "0.9em", color: "#aaa" }}>
-        Wallet connecté:{" "}
-        <span style={{ color: "#fff" }}>{lowerCaseAddress}</span>
-      </div>
-
-      {/* Vérification du Player */}
-      <div
-        style={{
-          padding: "20px",
-          backgroundColor: "#151525",
-          borderRadius: "6px",
-          marginBottom: "15px",
-        }}
-      >
-        <h3
-          style={{
-            borderBottom: "1px solid #333",
-            paddingBottom: "10px",
-            marginTop: 0,
-          }}
-        >
-          Vérification du Joueur
-        </h3>
-
-        {hasPlayerAtom ? (
-          <div>
-            <p style={{ color: "#4CAF50" }}>✓ Joueur détecté</p>
-            <p>
-              Triple joueur trouvé:{" "}
-              <span style={{ color: "#6c5ce7" }}>{playerTriples[0]?.id}</span>
-            </p>
-            {playerTriples.length > 0 && (
-              <div>
-                <p>
-                  Sujet: {playerTriples[0].subject.label} (ID:{" "}
-                  {playerTriples[0].subject_id})
-                </p>
-                <p>
-                  Prédicat: {playerTriples[0].predicate.label} (ID:{" "}
-                  {playerTriples[0].predicate_id})
-                </p>
-                <p>
-                  Objet: {playerTriples[0].object.label} (ID:{" "}
-                  {playerTriples[0].object_id})
-                </p>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div>
-            <p style={{ color: "#ff6b6b" }}>
-              ✗ Aucun joueur détecté pour ce jeu
+          <div 
+            style={{
+              backgroundColor: "#1a1a2e",
+              padding: "30px",
+              borderRadius: "10px",
+              textAlign: "center",
+              maxWidth: "500px",
+              boxShadow: "0 0 15px rgba(108, 92, 231, 0.5)"
+            }}
+          >
+            <h2 style={{ color: "#6c5ce7", marginBottom: "20px" }}>Wallet Required</h2>
+            <p style={{ fontSize: "18px", marginBottom: "25px", color: "#fff" }}>
+              Please connect your wallet to access the Player Map
             </p>
             <button
-              onClick={onCreatePlayer}
-              style={{
-                padding: "10px 20px",
-                backgroundColor: "#FFD32A",
-                color: "#000",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                marginTop: "10px",
-                fontWeight: "bold",
-              }}
-            >
-              CRÉER VOTRE JOUEUR
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Accès au Player Map */}
-      <div
-        style={{
-          padding: "20px",
-          backgroundColor: "#151525",
-          borderRadius: "6px",
-          opacity: hasPlayerAtom ? 1 : 0.5,
-          textAlign: "center",
-        }}
-      >
-        <h3
-          style={{
-            borderBottom: "1px solid #333",
-            paddingBottom: "10px",
-            marginTop: 0,
-          }}
-        >
-          Accès à la Player Map
-        </h3>
-
-        {hasPlayerAtom ? (
-          <div>
-            <p style={{ color: "#4CAF50", marginBottom: "20px" }}>
-              ✓ Toutes les conditions sont remplies
-            </p>
-            <button
+              onClick={handleConnectWallet}
               style={{
                 padding: "12px 24px",
-                backgroundColor: "#4CAF50",
+                backgroundColor: "#6c5ce7",
                 color: "#fff",
                 border: "none",
                 borderRadius: "4px",
@@ -284,25 +194,44 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
                 fontSize: "16px",
               }}
             >
-              Voir la Player Map
+              Connect Wallet
             </button>
           </div>
-        ) : (
-          <p>Créez votre joueur pour accéder à la Player Map</p>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Footer avec infos API */}
-      <div
-        style={{
-          marginTop: "20px",
-          fontSize: "0.8em",
-          color: "#666",
-          textAlign: "center",
-        }}
-      >
-        Utilisation de l'API {network}: {API_URLS[network]}
-      </div>
+      {/* Affichage du PlayerMapHome, soit blurred en arrière-plan si wallet non connecté, soit normale si wallet connecté mais pas de player */}
+      {(!isWalletReady || (isWalletReady && !hasPlayerAtom)) && (
+        <div style={{ 
+          filter: !isWalletReady ? "blur(3px)" : "none", 
+          opacity: !isWalletReady ? 0.7 : 1,
+          position: "relative"
+        }}>
+          <PlayerMapHome 
+            walletConnected={isWalletReady}
+            walletAddress={walletAddress}
+            wagmiConfig={wagmiConfig}
+            walletHooks={walletHooks}
+            // Passer notre propre gestionnaire de clic, pas celui externe
+            onCreatePlayer={handleCreatePlayer}
+          />
+        </div>
+      )}
+
+      {/* Si wallet connecté et player atom trouvé, afficher le PlayerMapGraph */}
+      {isWalletReady && hasPlayerAtom && (
+        <PlayerMapGraph />
+      )}
+
+      {/* Formulaire d'inscription - géré directement par GraphComponent */}
+      <RegistrationForm
+        isOpen={isRegistrationFormOpen}
+        onClose={handleCloseRegistrationForm}
+        walletConnected={walletConnected}
+        walletAddress={walletAddress}
+        wagmiConfig={wagmiConfig}
+        walletHooks={walletHooks}
+      />
     </div>
   );
 };

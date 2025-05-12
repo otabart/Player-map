@@ -5,12 +5,12 @@ import { useBatchCreateTriple } from "../hooks/useBatchCreateTriple";
 export interface PlayerData {
   pseudo: string;
   userId: string;
-  image?: string;
+  image?: string | undefined;
 }
 
 // Service pour gérer la création complète d'un joueur (atome + triples)
 export const usePlayerCreationService = (
-  walletConnected: any, 
+  walletConnected: any,
   walletAddress: string,
   publicClient?: any // Ajout du publicClient
 ) => {
@@ -19,16 +19,14 @@ export const usePlayerCreationService = (
   const { createPlayerTriples } = useBatchCreateTriple({ walletConnected, walletAddress, publicClient });
 
   // Fonction pour créer un joueur complet
-  const createPlayer = async (playerData: PlayerData): Promise<{ 
-    atomId: bigint; 
+  const createPlayer = async (playerData: PlayerData): Promise<{
+    atomId: bigint;
     ipfsHash: string;
     tripleCreated: boolean;
     transactionHash?: string;
   }> => {
     try {
       // Étape 1: Créer l'atome du joueur
-      console.log("Étape 1: Création de l'atome joueur...", playerData);
-      
       const atomResult = await createAtom({
         name: playerData.pseudo,
         description: playerData.userId,
@@ -36,18 +34,13 @@ export const usePlayerCreationService = (
       });
 
       const playerAtomId = atomResult.atomId;
-      console.log(`Atome joueur créé avec succès! ID: ${playerAtomId}, Hash IPFS: ${atomResult.ipfsHash}`);
 
       // Pause de sécurité entre les transactions
-      console.log("Pause de 2 secondes avant de créer les triples...");
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Étape 2: Créer les triples pour le joueur
-      console.log(`Étape 2: Création des triples pour le joueur (atomId: ${playerAtomId})...`);
-      
       try {
         const tripleResult = await createPlayerTriples(playerAtomId);
-        console.log("Triples créés avec succès:", tripleResult);
 
         return {
           atomId: playerAtomId,
@@ -57,7 +50,7 @@ export const usePlayerCreationService = (
         };
       } catch (tripleError) {
         console.error("Erreur lors de la création des triples:", tripleError);
-        
+
         // Même si les triples échouent, l'atome a bien été créé
         return {
           atomId: playerAtomId,

@@ -33,11 +33,6 @@ export const fetchAtomTriples = async (
   const url = API_URLS[network];
   const variables = { atomId };
 
-  console.log(
-    `[fetchAtomTriples] Requête directe vers ${url} avec variables:`,
-    variables
-  );
-
   try {
     const response = await fetch(url, {
       method: "POST",
@@ -51,7 +46,6 @@ export const fetchAtomTriples = async (
     });
 
     const result = await response.json();
-    console.log(`[fetchAtomTriples] Réponse brute:`, result);
 
     if (result.errors) {
       throw new Error(result.errors[0]?.message || "Erreur GraphQL inconnue");
@@ -83,10 +77,6 @@ export const useAtomTriples = (
         setLoading(false);
         return;
       }
-
-      console.log(
-        `[useAtomTriples] Démarrage de la requête pour atomId=${numericAtomId} sur le réseau ${network}`
-      );
 
       try {
         const response = await fetchAtomTriples(numericAtomId, network);

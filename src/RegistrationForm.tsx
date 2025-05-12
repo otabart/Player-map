@@ -6,15 +6,16 @@ import {
   atomABI,
   ATOM_CONTRACT_CHAIN_ID,
 } from "./abi";
-import { useAtomCreation } from "./hooks/useAtomCreation";
 import { ipfsToHttpUrl, isIpfsUrl, uploadToPinata } from "./utils/pinata";
+import PlayerCreationProgress from "./PlayerCreationProgress";
+import { usePlayerCreationService } from "./services/playerCreationService";
 
 interface RegistrationFormProps {
   isOpen: boolean;
   onClose: () => void;
-  walletConnected?: any; // Renommé de walletClient à walletConnected
-  walletAddress?: string; // Renommé de address à walletAddress
-  wagmiConfig?: any; // Configuration Wagmi fournie par l'app principale
+  walletConnected?: any; // Renamed from walletClient to walletConnected
+  walletAddress?: string; // Renamed from address to walletAddress
+  wagmiConfig?: any; // Wagmi configuration provided by the main app
   walletHooks?: {
     useAccount?: any;
     useConnect?: any;
@@ -23,7 +24,7 @@ interface RegistrationFormProps {
   };
 }
 
-// Fonction utilitaire pour encoder correctement en bytes
+// Utility function to correctly encode in bytes
 function stringToHex(str: string): `0x${string}` {
   let hex = "";
   for (let i = 0; i < str.length; i++) {
@@ -54,16 +55,26 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const publicClient = wagmiConfig?.publicClient;
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // State variables for tracking creation steps
+  const [step, setStep] = useState(1);
+  const [isCreatingAtom, setIsCreatingAtom] = useState(false);
+  const [isCreatingTriples, setIsCreatingTriples] = useState(false);
+  const [tripleCreated, setTripleCreated] = useState(false);
 
-  // Utiliser notre hook de création d'atomes
-  const { createAtom } = useAtomCreation({ walletConnected, walletAddress });
+  // Use the complete player creation service that handles both atoms and triples
+  const { createPlayer } = usePlayerCreationService(
+    walletConnected, 
+    walletAddress || '',
+    publicClient
+  );
 
   useEffect(() => {
     const checkExistingAtom = async () => {
       if (!walletAddress || !walletConnected) return;
 
       try {
-        // Vérifier avec balanceOf
+        // Check with balanceOf
         const balance = await walletConnected.readContract({
           address: ATOM_CONTRACT_ADDRESS,
           abi: atomABI,
@@ -103,8 +114,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
       }));
       setIsUploading(false);
     } catch (error) {
-      console.error("Erreur lors du téléversement de l'image:", error);
-      alert("Erreur lors du téléversement de l'image. Veuillez réessayer.");
+      console.error("Error uploading image:", error);
+      alert("Error uploading image. Please try again.");
       setIsUploading(false);
     }
   };
@@ -127,26 +138,43 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
 
     try {
       setIsLoading(true);
+      setIsCreatingAtom(true);
+      setStep(1);
 
-      // Utiliser notre hook pour créer l'atome
-      const result = await createAtom({
-        name: formData.pseudo,
-        description: formData.userId,
+      // Use the complete service to create a player (atom + triples)
+      const result = await createPlayer({
+        pseudo: formData.pseudo,
+        userId: formData.userId,
         image: formData.image || undefined,
       });
 
       setAtomId(result.atomId.toString());
+      setIsCreatingAtom(false);
+      
+      // Update the step
+      setStep(2);
+      setIsCreatingTriples(true);
+      
+      // Wait a bit for the display of triples creation
+      // (they are already being created via createPlayer)
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      setIsCreatingTriples(false);
+      setTripleCreated(result.tripleCreated);
+      setStep(3);
       setCreationSuccess(true);
       setIsLoading(false);
 
-      // Fermer le formulaire après 3 secondes
+      // Close the form after 3 seconds
       setTimeout(() => {
         onClose();
       }, 3000);
     } catch (error) {
-      console.error("Error creating atom:", error);
-      alert("Error creating atom. Please try again.");
+      console.error("Error creating player:", error);
+      alert("Error creating player. Please try again.");
       setIsLoading(false);
+      setIsCreatingAtom(false);
+      setIsCreatingTriples(false);
     }
   };
 
@@ -200,8 +228,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
               ? walletAddress.slice(0, 6) + "..." + walletAddress.slice(-4)
               : "Not connected"}
           </div>
-          <div>Connected: {String(!!walletConnected)}</div>
-          <div>Has Atom: {String(hasExistingAtom)}</div>
         </div>
 
         <button
@@ -212,222 +238,48 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
             right: "10px",
             backgroundColor: "transparent",
             border: "none",
-            color: "#fff",
             fontSize: "20px",
+            color: "#666",
             cursor: "pointer",
           }}
         >
-          ✕
+          ×
         </button>
 
-        <div style={{ textAlign: "center", marginBottom: "20px" }}>
-          <img
-            src={IntuitionLogo}
-            alt="Intuition Logo"
-            style={{ width: "120px", marginBottom: "10px" }}
-          />
-          <h3 style={{ color: "#FFD32A", fontSize: "1em", margin: "10px 0" }}>
-            CREATE YOUR ATOM
-          </h3>
-          <p style={{ fontSize: "0.8em", color: "#aaa" }}>
-            Réseau: Base Sepolia (Chain ID: {ATOM_CONTRACT_CHAIN_ID})
-          </p>
-        </div>
+        <img
+          src={IntuitionLogo}
+          alt="Intuition Logo"
+          style={{ width: "100px", marginBottom: "10px" }}
+        />
+        <h2
+          style={{
+            fontSize: "1.5em",
+            margin: "0 0 20px 0",
+            textAlign: "center",
+          }}
+        >
+          Create Your Player
+        </h2>
 
-        {creationSuccess ? (
-          <div style={{ textAlign: "center", color: "#4CAF50" }}>
-            <h3 style={{ color: "#4CAF50", marginBottom: "10px" }}>Success!</h3>
-            <p>Your atom has been created successfully.</p>
-            <p>Atom ID: {atomId}</p>
-            <p>This window will close automatically...</p>
-          </div>
-        ) : !walletAddress ? (
-          <div>
-            <p style={{ textAlign: "center", color: "#ff4444" }}>
-              Please connect your wallet first
-            </p>
-          </div>
-        ) : hasExistingAtom ? (
-          <p style={{ textAlign: "center", color: "#ff4444" }}>
-            You already have an atom associated with this wallet
-          </p>
-        ) : (
-          <>
-            <div style={{ marginBottom: "15px" }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "5px",
-                  fontSize: "0.9em",
-                  textAlign: "left",
-                }}
-              >
-                Pseudo
-              </label>
-              <input
-                type="text"
-                name="pseudo"
-                value={formData.pseudo}
-                onChange={handleInputChange}
-                placeholder="Enter your pseudo"
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  backgroundColor: "#1e1e30",
-                  border: "1px solid #333",
-                  color: "#fff",
-                  borderRadius: "4px",
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: "15px" }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "5px",
-                  fontSize: "0.9em",
-                  textAlign: "left",
-                }}
-              >
-                User ID
-              </label>
-              <input
-                type="text"
-                name="userId"
-                value={formData.userId}
-                onChange={handleInputChange}
-                placeholder="Enter your BossFighters user ID"
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  backgroundColor: "#1e1e30",
-                  border: "1px solid #333",
-                  color: "#fff",
-                  borderRadius: "4px",
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: "15px" }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "5px",
-                  fontSize: "0.9em",
-                  textAlign: "left",
-                }}
-              >
-                Profile picture (optional)
-              </label>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
-                }}
-              >
-                <div>
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    style={{
-                      padding: "8px 15px",
-                      backgroundColor: "#2e2e40",
-                      color: "#fff",
-                      border: "1px solid #333",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                      marginRight: "10px",
-                    }}
-                    disabled={isUploading}
-                  >
-                    {isUploading ? "Uploading..." : "Choose an image"}
-                  </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    style={{ display: "none" }}
-                  />
-                </div>
-
-                <p
-                  style={{ fontSize: "0.8em", color: "#aaa", marginTop: "0px" }}
-                >
-                  This image will be used as your Atom's profile picture.
-                </p>
-
-                {formData.image && (
-                  <div style={{ marginTop: "10px" }}>
-                    <p
-                      style={{
-                        fontSize: "0.8em",
-                        color: "#aaa",
-                        marginBottom: "5px",
-                      }}
-                    >
-                      Preview of the image:
-                    </p>
-                    <PreviewImage src={formData.image} />
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div style={{ textAlign: "center" }}>
-              <button
-                onClick={handleSubmit}
-                disabled={isLoading || isUploading}
-                style={{
-                  padding: "8px 20px",
-                  backgroundColor: "#FFD32A",
-                  color: "#000",
-                  border: "none",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                  opacity: isLoading || isUploading ? 0.7 : 1,
-                }}
-              >
-                {isLoading ? "Creation..." : "CREATE YOUR ATOM"}
-              </button>
-            </div>
-          </>
-        )}
+        <PlayerCreationProgress
+          step={step}
+          isCreatingAtom={isCreatingAtom}
+          isCreatingTriples={isCreatingTriples}
+          creationSuccess={creationSuccess}
+          atomId={atomId}
+          tripleCreated={tripleCreated}
+          walletAddress={walletAddress}
+          hasExistingAtom={hasExistingAtom}
+          formData={formData}
+          handleInputChange={handleInputChange}
+          handleFileUpload={handleFileUpload}
+          handleSubmit={handleSubmit}
+          isLoading={isLoading}
+          isUploading={isUploading}
+          fileInputRef={fileInputRef}
+        />
       </div>
     </div>
-  );
-};
-
-const PreviewImage = ({ src }: { src: string }) => {
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadImage = async () => {
-      if (isIpfsUrl(src)) {
-        const httpUrl = await ipfsToHttpUrl(src);
-        setImageUrl(httpUrl);
-      } else {
-        setImageUrl(src);
-      }
-    };
-
-    loadImage();
-  }, [src]);
-
-  if (!imageUrl) return <div>Loading image...</div>;
-
-  return (
-    <img
-      src={imageUrl}
-      alt="preview"
-      style={{
-        width: "100%",
-        maxHeight: "150px",
-        objectFit: "contain",
-      }}
-    />
   );
 };
 

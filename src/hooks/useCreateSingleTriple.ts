@@ -67,17 +67,8 @@ export const useCreateSingleTriple = ({ walletConnected, walletAddress, publicCl
       const exists = await checkTripleExists(subjectId, predicateId, objectId);
 
       if (exists) {
-        console.log("Triple already exists");
         return 0n;
       }
-
-      console.log('Creating triple...', { 
-        address: ATOM_CONTRACT_ADDRESS, 
-        subject: subjectId.toString(),
-        predicate: predicateId.toString(),
-        object: objectId.toString(),
-        value: VALUE_PER_TRIPLE 
-      });
 
       // Créer le triple
       const txHash = await walletConnected.writeContract({
@@ -87,8 +78,6 @@ export const useCreateSingleTriple = ({ walletConnected, walletAddress, publicCl
         args: [subjectId, predicateId, objectId],
         value: VALUE_PER_TRIPLE,
       });
-
-      console.log('Transaction hash:', txHash);
       
       // Attendre la confirmation de la transaction en utilisant une méthode compatible
       let receipt;
@@ -100,11 +89,8 @@ export const useCreateSingleTriple = ({ walletConnected, walletAddress, publicCl
         receipt = await txHash.wait();
       } else {
         // Attente passive si aucune méthode n'est disponible
-        console.log('No wait method available, waiting 3 seconds...');
         await new Promise(resolve => setTimeout(resolve, 3000));
       }
-
-      console.log("Triple created:", receipt);
 
       // Retourner l'ID du triple créé (à adapter selon votre contrat)
       return 1n; // ID fictif, à adapter
