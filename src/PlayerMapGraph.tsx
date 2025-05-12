@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import {
   GraphVisualization,
-  EndpointSelector,
   LoadingAnimation,
-  ENDPOINTS,
 } from "playermap_graph";
 
 const PlayerMapGraph: React.FC = () => {
   const [selectedNode, setSelectedNode] = useState(null);
-  const [selectedEndpoint, setSelectedEndpoint] = useState("base");
+  const [selectedEndpoint, setSelectedEndpoint] = useState("baseSepolia");
   const [isLoading, setIsLoading] = useState(false);
 
   return (
@@ -16,19 +14,10 @@ const PlayerMapGraph: React.FC = () => {
       style={{
         display: "flex",
         minHeight: "100vh",
-        backgroundColor: "#101020",
       }}
     >
       {/* Panneau principal */}
       <div style={{ flex: 1, position: "relative" }}>
-        {/* Sélecteur d'endpoint en haut */}
-        <div style={{ position: "absolute", top: 20, left: 20, zIndex: 1 }}>
-          <EndpointSelector
-            endpoints={ENDPOINTS}
-            selectedEndpoint={selectedEndpoint}
-            onEndpointChange={setSelectedEndpoint}
-          />
-        </div>
 
         {/* Visualisation du graphe */}
         <GraphVisualization

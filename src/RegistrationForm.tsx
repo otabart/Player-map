@@ -47,6 +47,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
     pseudo: "",
     userId: "",
     image: "",
+    guildId: "",
   });
   const [hasExistingAtom, setHasExistingAtom] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -92,6 +93,14 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   }, [walletAddress, walletConnected]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -146,6 +155,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
         pseudo: formData.pseudo,
         userId: formData.userId,
         image: formData.image || undefined,
+        guildId: formData.guildId ? BigInt(formData.guildId) : undefined,
       });
 
       setAtomId(result.atomId.toString());
@@ -272,6 +282,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           hasExistingAtom={hasExistingAtom}
           formData={formData}
           handleInputChange={handleInputChange}
+          handleSelectChange={handleSelectChange}
           handleFileUpload={handleFileUpload}
           handleSubmit={handleSubmit}
           isLoading={isLoading}

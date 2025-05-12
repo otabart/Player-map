@@ -1,11 +1,13 @@
 import { useAtomCreation } from "../hooks/useAtomCreation";
-import { useBatchCreateTriple } from "../hooks/useBatchCreateTriple";
+import { useBatchCreateTriple, TripleToCreate } from "../hooks/useBatchCreateTriple";
+import { PLAYER_TRIPLE_TYPES } from "../utils/constants";
 
 // Interface pour les données du joueur
 export interface PlayerData {
   pseudo: string;
   userId: string;
   image?: string | undefined;
+  guildId?: bigint; // Ajout du guildId facultatif
 }
 
 // Service pour gérer la création complète d'un joueur (atome + triples)
@@ -16,7 +18,7 @@ export const usePlayerCreationService = (
 ) => {
   // Hooks pour la création d'atomes et de triples
   const { createAtom } = useAtomCreation({ walletConnected, walletAddress, publicClient });
-  const { createPlayerTriples } = useBatchCreateTriple({ walletConnected, walletAddress, publicClient });
+  const { batchCreateTriple } = useBatchCreateTriple({ walletConnected, walletAddress, publicClient });
 
   // Fonction pour créer un joueur complet
   const createPlayer = async (playerData: PlayerData): Promise<{
@@ -40,7 +42,41 @@ export const usePlayerCreationService = (
 
       // Étape 2: Créer les triples pour le joueur
       try {
-        const tripleResult = await createPlayerTriples(playerAtomId);
+        // Préparation des triples standard
+        const triplesToCreate: TripleToCreate[] = [
+          {
+            subjectId: playerAtomId,
+            predicateId: PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId,
+            objectId: PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId,
+          },
+          {
+            subjectId: playerAtomId,
+            predicateId: PLAYER_TRIPLE_TYPES.IS_FAIRPLAY.predicateId,
+            objectId: PLAYER_TRIPLE_TYPES.IS_FAIRPLAY.objectId,
+          },
+          {
+            subjectId: playerAtomId,
+            predicateId: PLAYER_TRIPLE_TYPES.IS_STRONG_BOSS.predicateId,
+            objectId: PLAYER_TRIPLE_TYPES.IS_STRONG_BOSS.objectId,
+          },
+          {
+            subjectId: playerAtomId,
+            predicateId: PLAYER_TRIPLE_TYPES.IS_STRONG_FIGHTER.predicateId,
+            objectId: PLAYER_TRIPLE_TYPES.IS_STRONG_FIGHTER.objectId,
+          }
+        ];
+
+        // Ajouter le triple de guilde si une guilde est spécifiée
+        if (playerData.guildId) {
+          triplesToCreate.push({
+            subjectId: playerAtomId,
+            predicateId: PLAYER_TRIPLE_TYPES.IS_PLAYER_GUILD.predicateId,
+            objectId: playerData.guildId
+          });
+        }
+
+        // Création en batch de tous les triples
+        const tripleResult = await batchCreateTriple(triplesToCreate);
 
         return {
           atomId: playerAtomId,

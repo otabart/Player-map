@@ -115,17 +115,25 @@ export const useBatchCreateTriple = ({ walletConnected, walletAddress, publicCli
 
     // Création des triples spécifiques pour le joueur
     const triplesToCreate: TripleToCreate[] = [
-      // Premier triple - is_player standard
       {
         subjectId: playerAtomId,
-        predicateId: PLAYER_TRIPLE_TYPES.IS_PLAYER.predicateId,
-        objectId: PLAYER_TRIPLE_TYPES.IS_PLAYER.objectId,
+        predicateId: PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId,
+        objectId: PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId,
       },
-      // Second triple - HAS_LEVEL
       {
         subjectId: playerAtomId,
-        predicateId: PLAYER_TRIPLE_TYPES.HAS_LEVEL.predicateId,
-        objectId: PLAYER_TRIPLE_TYPES.HAS_LEVEL.objectId,
+        predicateId: PLAYER_TRIPLE_TYPES.IS_FAIRPLAY.predicateId,
+        objectId: PLAYER_TRIPLE_TYPES.IS_FAIRPLAY.objectId,
+      },
+      {
+        subjectId: playerAtomId,
+        predicateId: PLAYER_TRIPLE_TYPES.IS_STRONG_BOSS.predicateId,
+        objectId: PLAYER_TRIPLE_TYPES.IS_STRONG_BOSS.objectId,
+      },
+      {
+        subjectId: playerAtomId,
+        predicateId: PLAYER_TRIPLE_TYPES.IS_STRONG_FIGHTER.predicateId,
+        objectId: PLAYER_TRIPLE_TYPES.IS_STRONG_FIGHTER.objectId,
       }
     ];
 

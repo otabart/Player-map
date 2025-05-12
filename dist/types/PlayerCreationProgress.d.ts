@@ -13,8 +13,10 @@ interface PlayerCreationProgressProps {
         pseudo: string;
         userId: string;
         image: string;
+        guildId?: string;
     };
     handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleSelectChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
     handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
     handleSubmit: () => void;
     isLoading: boolean;

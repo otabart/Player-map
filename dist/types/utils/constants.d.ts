@@ -1,13 +1,29 @@
 export declare const PLAYER_TRIPLE_TYPES: {
-    IS_PLAYER: {
+    IS_PLAYER_GAMES: {
         predicateId: bigint;
         objectId: bigint;
     };
-    HAS_LEVEL: {
+    IS_FAIRPLAY: {
         predicateId: bigint;
         objectId: bigint;
+    };
+    IS_STRONG_BOSS: {
+        predicateId: bigint;
+        objectId: bigint;
+    };
+    IS_STRONG_FIGHTER: {
+        predicateId: bigint;
+        objectId: bigint;
+    };
+    IS_PLAYER_GUILD: {
+        predicateId: bigint;
+        objectId: null;
     };
 };
+export declare const OFFICIAL_GUILDS: {
+    id: bigint;
+    name: string;
+}[];
 export declare const API_STATUS: {
     SUCCESS: string;
     ERROR: string;

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Network, API_URLS } from "./useAtomData";
+import { PLAYER_TRIPLE_TYPES } from "../utils/constants";
 
 const GET_TRIPLES_BY_CREATOR = `
   query GetTriplesByCreator($creatorId: String!, $predicateId: numeric!, $objectId: numeric!) {
@@ -69,8 +70,8 @@ export interface TriplesByCreatorResponse {
 // et avec un prédicat et un objet spécifiques
 export const fetchTriplesByCreator = async (
   creatorId: string,
-  predicateId: number = 24442,
-  objectId: number = 24441,
+  predicateId: number = Number(PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId),
+  objectId: number = Number(PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId),
   network: Network = Network.MAINNET
 ): Promise<TriplesByCreatorResponse> => {
   const url = API_URLS[network];
@@ -107,8 +108,8 @@ export const fetchTriplesByCreator = async (
 // Hook pour récupérer les triples avec des conditions spécifiques
 export const useTripleByCreator = (
   creatorId: string,
-  predicateId: number = 24442,
-  objectId: number = 24441,
+  predicateId: number = Number(PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId),
+  objectId: number = Number(PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId),
   network: Network = Network.MAINNET
 ) => {
   const [data, setData] = useState<TriplesByCreatorResponse | null>(null);

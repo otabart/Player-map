@@ -1,4 +1,5 @@
 import React from "react";
+import { OFFICIAL_GUILDS } from './utils/constants';
 
 interface PlayerCreationProgressProps {
   step: number;
@@ -13,8 +14,10 @@ interface PlayerCreationProgressProps {
     pseudo: string;
     userId: string;
     image: string;
+    guildId?: string;
   };
   handleInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleSelectChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSubmit: () => void;
   isLoading: boolean;
@@ -81,6 +84,7 @@ const PlayerCreationProgress: React.FC<PlayerCreationProgressProps> = ({
   hasExistingAtom,
   formData,
   handleInputChange,
+  handleSelectChange,
   handleFileUpload,
   handleSubmit,
   isLoading,
@@ -255,6 +259,39 @@ const PlayerCreationProgress: React.FC<PlayerCreationProgressProps> = ({
                 borderRadius: "4px",
               }}
             />
+          </div>
+
+          <div style={{ marginBottom: "15px" }}>
+            <label
+              style={{
+                display: "block",
+                marginBottom: "5px",
+                fontSize: "0.9em",
+                textAlign: "left",
+              }}
+            >
+              Guild (Optional)
+            </label>
+            <select
+              name="guildId"
+              value={formData.guildId || ""}
+              onChange={handleSelectChange}
+              style={{
+                width: "100%",
+                padding: "8px",
+                backgroundColor: "#1e1e30",
+                border: "1px solid #333",
+                color: "#fff",
+                borderRadius: "4px",
+              }}
+            >
+              <option value="">Select a guild (optional)</option>
+              {OFFICIAL_GUILDS.map((guild) => (
+                <option key={guild.id.toString()} value={guild.id.toString()}>
+                  {guild.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div style={{ marginBottom: "15px" }}>
