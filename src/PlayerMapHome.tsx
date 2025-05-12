@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import IntuitionLogo from "./assets/img/logo.svg";
-import RegistrationForm from "./RegistrationForm";
 
 interface PlayerMapHomeProps {
   walletConnected?: any;
@@ -9,6 +8,7 @@ interface PlayerMapHomeProps {
   walletHooks?: any;
   onClose?: () => void;
   isOpen?: boolean;
+  onCreatePlayer?: () => void;
 }
 
 const PlayerMapHome: React.FC<PlayerMapHomeProps> = ({
@@ -18,20 +18,17 @@ const PlayerMapHome: React.FC<PlayerMapHomeProps> = ({
   walletHooks,
   onClose,
   isOpen: externalIsOpen,
+  onCreatePlayer,
 }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Vérifier si l'utilisateur a un wallet connecté pour l'affichage conditionnel
+  const isUserConnected = walletConnected && (walletAddress || (walletConnected.account && walletConnected.account.address));
 
-  const openModal = () => {
-    setIsModalOpen(true);
+  // Fonction pour gérer le clic sur le bouton de création de joueur
+  const handleCreatePlayer = () => {
+    if (onCreatePlayer) {
+      onCreatePlayer();
+    }
   };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    if (onClose) onClose();
-  };
-
-  // Utiliser isOpen externe si fourni, sinon utiliser l'état local
-  const isOpen = externalIsOpen !== undefined ? externalIsOpen : isModalOpen;
 
   return (
     <div
@@ -152,7 +149,7 @@ const PlayerMapHome: React.FC<PlayerMapHomeProps> = ({
       </div>
 
       <button
-        onClick={openModal}
+        onClick={handleCreatePlayer}
         style={{
           marginTop: "20px",
           marginBottom: "20px",
@@ -168,16 +165,6 @@ const PlayerMapHome: React.FC<PlayerMapHomeProps> = ({
       >
         CREATE YOUR PLAYER
       </button>
-
-      {/* Créer une instance séparée du RegistrationForm contrôlée localement */}
-      <RegistrationForm
-        isOpen={isModalOpen} // Utiliser l'état local ici, pas isOpen
-        onClose={closeModal}
-        walletConnected={walletConnected}
-        walletAddress={walletAddress}
-        wagmiConfig={wagmiConfig}
-        walletHooks={walletHooks}
-      />
     </div>
   );
 };

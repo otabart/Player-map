@@ -6,7 +6,7 @@ import { default as GraphComponent } from './GraphComponent';
 export interface PlayerMapConfigType {
     apiUrl: string;
 }
-export { PlayerMapHome, RegistrationForm, PlayerMapGraph, GraphComponent };
+export { PlayerMapHome, RegistrationForm, PlayerMapGraph, GraphComponent, };
 export declare const PlayerMapConfig: {
     /**
      * Initialise la configuration de la bibliothèque Player-map

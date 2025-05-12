@@ -27,6 +27,4 @@ export const initConfig = (config: { apiUrl: string }): void => {
   currentConfig = {
     apiUrl: config.apiUrl
   };
-  
-  console.log('Configuration Player-map initialisée:', currentConfig);
 }; 

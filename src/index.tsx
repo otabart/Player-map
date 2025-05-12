@@ -17,7 +17,12 @@ export interface PlayerMapConfigType {
 }
 
 // Exporter les composants individuellement
-export { PlayerMapHome, RegistrationForm, PlayerMapGraph, GraphComponent };
+export {
+  PlayerMapHome,
+  RegistrationForm,
+  PlayerMapGraph,
+  GraphComponent,
+};
 
 // Exporter la configuration avec types explicites
 export const PlayerMapConfig = {

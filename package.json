@@ -1,6 +1,6 @@
 {
   "name": "player-map",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -22,7 +22,7 @@
   "dependencies": {
     "@0xintuition/graphql": "^0.8.0",
     "axios": "^1.9.0",
-    "playermap_graph": "file:../playermap-graph"
+    "playermap_graph": "^0.1.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",
