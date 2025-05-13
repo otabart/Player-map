@@ -4,6 +4,7 @@ import { useTripleByCreator } from "./hooks/useTripleByCreator";
 import PlayerMapHome from "./PlayerMapHome";
 import PlayerMapGraph from "./PlayerMapGraph";
 import RegistrationForm from "./RegistrationForm";
+import { PLAYER_TRIPLE_TYPES } from "./utils/constants";
 
 interface GraphComponentProps {
   walletConnected?: boolean;
@@ -48,7 +49,7 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
     loading: tripleLoading,
     error: tripleError,
     triples: playerTriples,
-  } = useTripleByCreator(lowerCaseAddress, 24442, 24441, network);
+  } = useTripleByCreator(lowerCaseAddress, Number(PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId), Number(PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId), network);
 
   // Vérifie si l'utilisateur a un player atom
   const hasPlayerAtom = playerTriples.length > 0;
