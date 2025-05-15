@@ -6,7 +6,7 @@ import {
 
 const PlayerMapGraph: React.FC = () => {
   const [selectedNode, setSelectedNode] = useState(null);
-  const [selectedEndpoint, setSelectedEndpoint] = useState("baseSepolia");
+  const [selectedEndpoint, setSelectedEndpoint] = useState("baseSepolia"); // TODO: change to mainnet
   const [isLoading, setIsLoading] = useState(false);
 
   return (

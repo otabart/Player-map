@@ -3,6 +3,8 @@ import PlayerMapHome from "./PlayerMapHome";
 import RegistrationForm from "./RegistrationForm";
 import PlayerMapGraph from "./PlayerMapGraph";
 import GraphComponent from "./GraphComponent";
+import { ClaimVoting } from "./components/vote/ClaimVoting";
+import { useDepositTriple } from "./hooks/useDepositTriple";
 import {
   setAuthToken,
   getAuthToken,
@@ -22,7 +24,13 @@ export {
   RegistrationForm,
   PlayerMapGraph,
   GraphComponent,
+  ClaimVoting,
+  useDepositTriple,
 };
+
+// Exporter les types pour le composant de vote
+export { VoteDirection, type Claim, type VoteItem, type DepositResponse } from './types/vote';
+export { PREDEFINED_CLAIM_IDS, UNIT_VALUE } from './utils/voteConstants';
 
 // Exporter la configuration avec types explicites
 export const PlayerMapConfig = {
