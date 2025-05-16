@@ -18,7 +18,7 @@ export const ClaimList: React.FC<ClaimListProps> = ({
   onChangeUnits,
   isVoteDirectionAllowed,
   walletAddress = "",
-  network = Network.TESTNET
+  network = Network.MAINNET
 }) => {
   if (isLoading) {
     return (

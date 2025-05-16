@@ -28,7 +28,7 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
   onConnectWallet,
 }) => {
   // État pour suivre le réseau actuel (par défaut testnet)
-  const [network, setNetwork] = useState<Network>(Network.TESTNET);
+  const [network, setNetwork] = useState<Network>(Network.MAINNET);
   
   // État local pour le formulaire d'inscription
   const [isRegistrationFormOpen, setIsRegistrationFormOpen] = useState(false);
@@ -180,7 +180,7 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
 
       {/* Si wallet connecté et player atom trouvé, afficher le PlayerMapGraph */}
       {isWalletReady && hasPlayerAtom && (
-        <PlayerMapGraph />
+        <PlayerMapGraph walletAddress={walletAddress} />
       )}
 
       {/* Formulaire d'inscription - géré directement par GraphComponent */}

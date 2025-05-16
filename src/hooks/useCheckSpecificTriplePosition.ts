@@ -10,7 +10,7 @@ interface UseCheckSpecificTriplePositionProps {
 export const useCheckSpecificTriplePosition = ({
   walletAddress,
   tripleId,
-  network = Network.TESTNET
+  network = Network.MAINNET
 }: UseCheckSpecificTriplePositionProps) => {
   const [hasPosition, setHasPosition] = useState<boolean>(false);
   const [isFor, setIsFor] = useState<boolean | null>(null);
@@ -90,7 +90,6 @@ export const useCheckSpecificTriplePosition = ({
         }
 
         const result = await response.json();
-        console.log('DIRECT TRIPLE POSITION QUERY RESULT:', JSON.stringify(result, null, 2));
 
         if (result.errors) {
           console.error('GraphQL errors:', result.errors);

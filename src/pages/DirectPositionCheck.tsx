@@ -8,7 +8,7 @@ import { useCheckSpecificTriplePosition } from '../hooks/useCheckSpecificTripleP
 const DirectPositionCheck: React.FC = () => {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [tripleId, setTripleId] = useState<string>('24596'); // Default to the triple ID seen in the UI
-  const [network, setNetwork] = useState<Network>(Network.TESTNET);
+  const [network, setNetwork] = useState<Network>(Network.MAINNET);
 
   // For debugging purposes
   const { 

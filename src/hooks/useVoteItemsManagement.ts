@@ -12,7 +12,7 @@ interface UseVoteItemsManagementProps {
 }
 
 export const useVoteItemsManagement = ({
-  network = Network.TESTNET,
+  network = Network.MAINNET,
   walletAddress = "",
   onError
 }: UseVoteItemsManagementProps) => {
@@ -53,25 +53,18 @@ export const useVoteItemsManagement = ({
 
       // Méthode 2: Rechercher dans le format triples avec positions imbriquées
       if (userPositionsData.triples && Array.isArray(userPositionsData.triples)) {
-        console.log('PROCESSING TRIPLES:', userPositionsData.triples.length);
         userPositionsData.triples.forEach((triple: any) => {
           if (!triple.id) {
             return;
           }
 
-          console.log('PROCESSING TRIPLE ID:', triple.id, 'Subject:', triple.subject?.label);
-
-          // Recherche dans différentes structures possibles
-
           // Structure 1: Positions directement dans le triple
           if (triple.positions && Array.isArray(triple.positions)) {
-            console.log('TRIPLE HAS POSITIONS ARRAY:', triple.positions.length);
             const userPosition = triple.positions.find((pos: any) =>
               pos.account?.id?.toLowerCase() === walletAddress.toLowerCase()
             );
 
             if (userPosition) {
-              console.log('FOUND USER POSITION IN POSITIONS ARRAY FOR TRIPLE:', triple.id);
               // Déterminer la direction en fonction de la structure
               if (userPosition.is_for !== undefined) {
                 positions[String(triple.id)] = userPosition.is_for ? VoteDirection.For : VoteDirection.Against;
@@ -87,10 +80,7 @@ export const useVoteItemsManagement = ({
           const vaultPositions = triple.vault?.positions || [];
           const counterVaultPositions = triple.counter_vault?.positions || [];
 
-          console.log('VAULT POSITIONS:', vaultPositions.length, 'COUNTER VAULT POSITIONS:', counterVaultPositions.length);
-
           // Check if user has a position in either vault
-          // Remarque: la structure attendue est position.account.id et non position.account_id
           const userVaultPosition = vaultPositions.find((position: any) => {
             return position.account?.id?.toLowerCase() === walletAddress.toLowerCase();
           });
@@ -100,10 +90,8 @@ export const useVoteItemsManagement = ({
           });
 
           if (userVaultPosition) {
-            console.log('FOUND USER POSITION IN VAULT FOR TRIPLE:', triple.id);
             positions[String(triple.id)] = VoteDirection.For;
           } else if (userCounterVaultPosition) {
-            console.log('FOUND USER POSITION IN COUNTER VAULT FOR TRIPLE:', triple.id);
             positions[String(triple.id)] = VoteDirection.Against;
           }
         });
@@ -111,12 +99,10 @@ export const useVoteItemsManagement = ({
 
       // Méthode 3: Vérifier également dans des structures alternatives
       if (userPositionsData.position_triples && Array.isArray(userPositionsData.position_triples)) {
-        console.log('PROCESSING POSITION_TRIPLES:', userPositionsData.position_triples.length);
         userPositionsData.position_triples.forEach((item: any) => {
           if (!item.triple_id && !item.triple?.id) return;
 
           const tripleId = item.triple_id || item.triple?.id;
-          console.log('PROCESSING POSITION_TRIPLE ID:', tripleId);
 
           if (item.is_for !== undefined) {
             positions[String(tripleId)] = item.is_for ? VoteDirection.For : VoteDirection.Against;
@@ -128,7 +114,6 @@ export const useVoteItemsManagement = ({
         });
       }
 
-      console.log('FINAL USER POSITIONS:', positions);
       setUserPositions(positions);
 
       // Update existing vote items with user position information
@@ -136,7 +121,6 @@ export const useVoteItemsManagement = ({
         prevItems.map(item => {
           const positionDirection = positions[String(item.id)] || VoteDirection.None;
           const hasPosition = positionDirection !== VoteDirection.None;
-          console.log('VOTE ITEM UPDATE:', item.id, 'HasPosition:', hasPosition, 'Direction:', positionDirection);
           return {
             ...item,
             userHasPosition: hasPosition,
