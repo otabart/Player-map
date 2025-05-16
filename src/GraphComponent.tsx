@@ -28,7 +28,7 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
   onConnectWallet,
 }) => {
   // État pour suivre le réseau actuel (par défaut testnet)
-  const [network, setNetwork] = useState<Network>(Network.TESTNET);
+  const [network, setNetwork] = useState<Network>(Network.MAINNET);
   
   // État local pour le formulaire d'inscription
   const [isRegistrationFormOpen, setIsRegistrationFormOpen] = useState(false);

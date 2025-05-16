@@ -7,7 +7,7 @@ import { Network, API_URLS } from "../hooks/useAtomData";
 export const checkTriplePosition = async (
   walletAddress: string,
   tripleId: string | number,
-  network: Network = Network.TESTNET
+  network: Network = Network.MAINNET
 ): Promise<{
   hasPosition: boolean;
   isFor: boolean | null;

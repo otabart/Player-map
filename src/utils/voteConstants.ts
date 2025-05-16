@@ -1,5 +1,6 @@
 // Fixed amount in wei for each voting unit
-export const UNIT_VALUE = 1000000000000000n; // 0.001 ETH
+// testne : export const UNIT_VALUE = 1000000000000000n; // 0.001 ETH
+export const UNIT_VALUE =25000000000000n;
 
 // List of predefined claim IDs for voting
 // Note: These IDs correspond to actual triples in the blockchain

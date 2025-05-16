@@ -17,7 +17,7 @@ export const ClaimItem: React.FC<ClaimItemProps> = ({
   onChangeUnits, 
   isVoteDirectionAllowed,
   walletAddress = "",
-  network = Network.TESTNET
+  network = Network.MAINNET
 }) => {
   const { 
     id, 
@@ -80,8 +80,7 @@ export const ClaimItem: React.FC<ClaimItemProps> = ({
   
   const handleIncreaseFor = () => {
     // Double vérification de l'autorisation pour voter FOR
-    if (!canVoteFor) {
-      console.log("Vote FOR not allowed for this triple");
+    if (!canVoteFor) {;
       return;
     }
     const newValue = Math.min(sliderValue + 1, MAX_UNITS);
@@ -106,7 +105,6 @@ export const ClaimItem: React.FC<ClaimItemProps> = ({
   const handleIncreaseAgainst = () => {
     // Double vérification de l'autorisation pour voter AGAINST
     if (!canVoteAgainst) {
-      console.log("Vote AGAINST not allowed for this triple");
       return;
     }
     const newValue = Math.max(sliderValue - 1, -MAX_UNITS);

@@ -29,7 +29,7 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
   walletAddress,
   publicClient,
   onClose,
-  network = Network.TESTNET,
+  network = Network.MAINNET,
   onConnectWallet,
   onCreatePlayer,
   wagmiConfig,

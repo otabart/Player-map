@@ -20,7 +20,7 @@ export const useSubmitVotes = ({
   walletConnected,
   walletAddress,
   publicClient,
-  network = Network.TESTNET,
+  network = Network.MAINNET,
   onSuccess
 }: UseSubmitVotesProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);

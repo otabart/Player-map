@@ -30,22 +30,6 @@ export const useDisplayTriplesWithPosition = (walletAddress: string) => {
         // Cast response to any to avoid TypeScript errors
         const responseData = response as any;
 
-        // Log position data structure for debugging
-        console.log('POSITION DATA DEBUG:', JSON.stringify({
-          hasPositions: Boolean(responseData.positions?.length),
-          hasTriples: Boolean(responseData.triples?.length),
-          hasPositionTriples: Boolean(responseData.position_triples?.length),
-          tripleCounts: responseData.triples?.length || 0,
-          positionCounts: responseData.positions?.length || 0,
-          positionTripleCounts: responseData.position_triples?.length || 0,
-          firstTriplesItem: responseData.triples?.[0] ? {
-            id: responseData.triples[0].id,
-            hasPositions: Boolean(responseData.triples[0].positions?.length),
-            vaultPositions: responseData.triples[0].vault?.positions?.length || 0,
-            counterVaultPositions: responseData.triples[0].counter_vault?.positions?.length || 0
-          } : null
-        }));
-
         setData(response);
         setLoading(false);
       } catch (err) {
