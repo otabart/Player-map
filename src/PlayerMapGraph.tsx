@@ -4,7 +4,11 @@ import {
   LoadingAnimation,
 } from "playermap_graph";
 
-const PlayerMapGraph: React.FC = () => {
+interface PlayerMapGraphProps {
+  walletAddress?: string;
+}
+
+const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress }) => {
   const [selectedNode, setSelectedNode] = useState(null);
   const [selectedEndpoint, setSelectedEndpoint] = useState("base"); // TODO: change to mainnet
   const [isLoading, setIsLoading] = useState(false);
@@ -34,6 +38,7 @@ const PlayerMapGraph: React.FC = () => {
           endpoint={selectedEndpoint}
           onNodeSelect={setSelectedNode}
           onLoadingChange={setIsLoading}
+          walletAddress={walletAddress}
         />
       </div>
 
