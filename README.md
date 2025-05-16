@@ -10,10 +10,16 @@ Player Map is a React application that allows you to visualize and manage relati
 - Modern and reactive user interface
 
 ## 📦 Installation
+```
+npm install player-map
+```
+
+## For local usage
 
 ```bash
 # Install dependencies
-pnpm install
+npm install
+npm run build
 ```
 
 ## 🛠️ Technologies
@@ -39,9 +45,6 @@ src/
 └── utils/         # Utilities and helper functions
 ```
 
-## 🚀 Available Scripts
-
-- `pnpm run build` : Build the project for production
 
 ## 📦 Main Dependencies
 
