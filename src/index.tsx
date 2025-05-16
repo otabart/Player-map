@@ -3,6 +3,11 @@ import PlayerMapHome from "./PlayerMapHome";
 import RegistrationForm from "./RegistrationForm";
 import PlayerMapGraph from "./PlayerMapGraph";
 import GraphComponent from "./GraphComponent";
+import { ClaimVoting } from "./components/vote/ClaimVoting";
+import { useDepositTriple } from "./hooks/useDepositTriple";
+import { useCheckSpecificTriplePosition } from "./hooks/useCheckSpecificTriplePosition";
+import { useDisplayTriplesWithPosition } from "./hooks/useDisplayTriplesWithPosition";
+import { checkTriplePosition } from "./utils/debugPosition";
 import {
   setAuthToken,
   getAuthToken,
@@ -16,13 +21,26 @@ export interface PlayerMapConfigType {
   apiUrl: string;
 }
 
-// Exporter les composants individuellement
+// Export des composants principaux
 export {
   PlayerMapHome,
   RegistrationForm,
   PlayerMapGraph,
   GraphComponent,
+  ClaimVoting,
+  useDepositTriple,
+  useCheckSpecificTriplePosition,
+  useDisplayTriplesWithPosition,
+  checkTriplePosition,
+  setAuthToken,
+  getAuthToken,
+  isAuthenticated,
+  clearAuthToken,
 };
+
+// Exporter les types pour le composant de vote
+export { VoteDirection, type Claim, type VoteItem, type DepositResponse } from './types/vote';
+export { PREDEFINED_CLAIM_IDS, UNIT_VALUE } from './utils/voteConstants';
 
 // Exporter la configuration avec types explicites
 export const PlayerMapConfig = {

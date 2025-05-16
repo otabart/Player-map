@@ -4,7 +4,7 @@ import React, { useState } from "react";
 export const ATOM_CONTRACT_ADDRESS = import.meta.env.VITE_ATOM_CONTRACT_ADDRESS;
 export const ATOM_CONTRACT_CHAIN_ID = Number(import.meta.env.VITE_ATOM_CONTRACT_CHAIN_ID); // Base Sepolia chain ID
 export const VALUE_PER_ATOM = BigInt(import.meta.env.VITE_VALUE_PER_ATOM); // Valeur pour un atome, à ajuster selon votre contrat
-export const VALUE_PER_TRIPLE = BigInt(import.meta.env.VITE_VALUE_PER_TRIPLE); 
+export const VALUE_PER_TRIPLE = BigInt(import.meta.env.VITE_VALUE_PER_TRIPLE);
 
 export const atomABI = [
   {
@@ -170,6 +170,61 @@ export const atomABI = [
       }
     ],
     stateMutability: 'view'
+  },
+  // Fonction pour le dépôt de stake sur un triple
+  {
+    type: 'function',
+    name: 'depositTriple',
+    inputs: [
+      {
+        name: 'receiver',
+        type: 'address',
+        internalType: 'address'
+      },
+      {
+        name: 'id',
+        type: 'uint256',
+        internalType: 'uint256'
+      }
+    ],
+    outputs: [
+      {
+        name: '',
+        type: 'uint256',
+        internalType: 'uint256'
+      }
+    ],
+    stateMutability: 'payable'
+  },
+  // Fonctions pour le rachat (redeem) des stakes
+  {
+    type: 'function',
+    name: 'redeemTriple',
+    inputs: [
+      {
+        name: 'shares',
+        type: 'uint256',
+        internalType: 'uint256'
+      },
+      {
+        name: 'receiver',
+        type: 'address',
+        internalType: 'address'
+      },
+      {
+        name: 'id',
+        type: 'uint256',
+        internalType: 'uint256'
+      }
+    ],
+    outputs: [
+      {
+        name: '',
+        type: 'uint256',
+        internalType: 'uint256'
+      }
+    ],
+    stateMutability: 'nonpayable'
   },
   {
     type: 'fallback',

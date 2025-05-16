@@ -5,6 +5,7 @@ import PlayerMapHome from "./PlayerMapHome";
 import PlayerMapGraph from "./PlayerMapGraph";
 import RegistrationForm from "./RegistrationForm";
 import { PLAYER_TRIPLE_TYPES } from "./utils/constants";
+import { ConnectWalletModal } from "./components/modals";
 
 interface GraphComponentProps {
   walletConnected?: boolean;
@@ -153,53 +154,11 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
   // Logique principale d'affichage
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }}>
-      {/* Modal "Connect wallet first" - s'affiche par-dessus PlayerMapHome quand wallet non connecté */}
-      {!isWalletReady && (
-        <div 
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "rgba(0, 0, 0, 0.7)",
-            backdropFilter: "blur(5px)",
-            zIndex: 1000
-          }}
-        >
-          <div 
-            style={{
-              backgroundColor: "#1a1a2e",
-              padding: "30px",
-              borderRadius: "10px",
-              textAlign: "center",
-              maxWidth: "500px",
-              boxShadow: "0 0 15px rgba(108, 92, 231, 0.5)"
-            }}
-          >
-            <h2 style={{ color: "#6c5ce7", marginBottom: "20px" }}>Wallet Required</h2>
-            <p style={{ fontSize: "18px", marginBottom: "25px", color: "#fff" }}>
-              Please connect your wallet to access the Player Map
-            </p>
-            <button
-              onClick={handleConnectWallet}
-              style={{
-                padding: "12px 24px",
-                backgroundColor: "#6c5ce7",
-                color: "#fff",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "16px",
-              }}
-            >
-              Connect Wallet
-            </button>
-          </div>
-        </div>
-      )}
+      {/* Utiliser notre nouvelle modal de connexion wallet */}
+      <ConnectWalletModal
+        isOpen={!isWalletReady}
+        onConnectWallet={handleConnectWallet}
+      />
 
       {/* Affichage du PlayerMapHome, soit blurred en arrière-plan si wallet non connecté, soit normale si wallet connecté mais pas de player */}
       {(!isWalletReady || (isWalletReady && !hasPlayerAtom)) && (

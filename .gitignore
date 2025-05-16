@@ -40,3 +40,5 @@ pnpm-lock.yaml
 .npm/
 
 .cursorrules
+dist/
+.old
