@@ -1,40 +1,7 @@
 import { useState, useEffect } from "react";
 import { Network, API_URLS } from "./useAtomData";
 import { PLAYER_TRIPLE_TYPES } from "../utils/constants";
-
-const GET_TRIPLES_BY_CREATOR = `
-  query GetTriplesByCreator($creatorId: String!, $predicateId: numeric!, $objectId: numeric!) {
-    triples(where: {
-      subject: { creator_id: { _eq: $creatorId } },
-      predicate_id: { _eq: $predicateId },
-      object_id: { _eq: $objectId }
-    }) {
-      id
-      subject_id
-      predicate_id
-      object_id
-      subject {
-        id
-        label
-        type
-        creator_id
-      }
-      predicate {
-        id
-        label
-        type
-      }
-      object {
-        id
-        label
-        type
-      }
-      block_number
-      block_timestamp
-      transaction_hash
-    }
-  }
-`;
+import { GetTriplesDocument, fetcher } from '@0xintuition/graphql';
 
 export interface Triple {
   id: string;
@@ -75,7 +42,15 @@ export const fetchTriplesByCreator = async (
   network: Network = Network.MAINNET
 ): Promise<TriplesByCreatorResponse> => {
   const url = API_URLS[network];
-  const variables = { creatorId, predicateId, objectId };
+  
+  // Construire la condition where pour filtrer par creator_id, predicate_id et object_id
+  const variables = { 
+    where: {
+      subject: { creator_id: { _eq: creatorId } },
+      predicate_id: { _eq: predicateId },
+      object_id: { _eq: objectId }
+    }
+  };
 
   try {
     const response = await fetch(url, {
@@ -85,7 +60,7 @@ export const fetchTriplesByCreator = async (
         Accept: "application/json",
       },
       body: JSON.stringify({
-        query: GET_TRIPLES_BY_CREATOR,
+        query: GetTriplesDocument,
         variables,
       }),
     });

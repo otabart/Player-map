@@ -82,9 +82,11 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
     totalUnits,
     numberOfTransactions,
     handleChangeUnits,
-    resetAllVotes
+    resetAllVotes,
+    isVoteDirectionAllowed
   } = useVoteItemsManagement({
     network,
+    walletAddress: lowerCaseAddress,
     onError: (message) => {
       setTransactionStatus({
         status: "error",
@@ -129,8 +131,6 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
 
   // Fonction pour fermer la modale CreatePlayerModal et tout le composant de vote
   const handleCloseCreatePlayerModal = () => {
-    console.log("Closing CreatePlayerModal and Vote Component");
-    // Fermer la modale
     setShowCreatePlayerModal(false);
     
     // Fermer tout le composant de vote en appelant onClose
@@ -228,6 +228,9 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
         isLoading={isLoading || tripleLoading}
         voteItems={voteItems}
         onChangeUnits={handleChangeUnits}
+        isVoteDirectionAllowed={isVoteDirectionAllowed}
+        walletAddress={lowerCaseAddress}
+        network={network}
       />
       <SubmitButton
         onSubmit={handleSubmit}

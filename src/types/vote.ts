@@ -23,6 +23,8 @@ export interface VoteItem extends Claim {
   vault_position_count?: number; // Number of positions in the FOR vault
   counter_vault_id?: string; // Counter vault ID used for AGAINST votes
   counter_vault_position_count?: number; // Number of positions in the AGAINST vault
+  userHasPosition?: boolean; // Whether the user already has a position on this triple
+  userPositionDirection?: VoteDirection; // Direction of the user's existing position
 }
 
 // Response structure after a transaction

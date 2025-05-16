@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Network, API_URLS } from "./useAtomData";
+import { GetTripleDocument, fetcher } from '@0xintuition/graphql';
 
 // Interface for triple details returned from GraphQL
 export interface TripleDetails {
@@ -35,10 +36,8 @@ export const useFetchTripleDetails = ({
     setIsLoading(true);
 
     try {
+      // Utilisons directement la méthode fetch qui est plus fiable
       const apiUrl = API_URLS[network];
-
-      console.log(`Fetching triple ${tripleId} from ${apiUrl}`);
-
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -46,6 +45,7 @@ export const useFetchTripleDetails = ({
           query: `
             query Triple($tripleId: numeric!) {
               triple(id: $tripleId) {
+                id
                 subject {
                   label
                 }
@@ -71,28 +71,16 @@ export const useFetchTripleDetails = ({
       });
 
       if (!response.ok) {
-        console.error(`GraphQL request failed with status ${response.status}: ${response.statusText}`);
-        if (onError) {
-          onError(`GraphQL request failed with status ${response.status}: ${response.statusText}`);
-        }
-        setIsLoading(false);
-        return null;
+        throw new Error(`GraphQL request failed with status ${response.status}`);
       }
 
       const result = await response.json();
-      console.log("API Response:", JSON.stringify(result, null, 2));
 
       if (result.errors) {
-        console.error("GraphQL errors:", result.errors);
-        if (onError) {
-          onError(`GraphQL errors: ${JSON.stringify(result.errors)}`);
-        }
-        setIsLoading(false);
-        return null;
+        throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);
       }
 
       if (!result.data?.triple) {
-        console.warn(`Triple with ID ${tripleId} not found`);
         if (onError) {
           onError(`Triple with ID ${tripleId} not found`);
         }
@@ -107,12 +95,15 @@ export const useFetchTripleDetails = ({
       setIsLoading(false);
       return {
         id: String(tripleId),
-        ...result.data.triple,
+        subject: result.data.triple.subject,
+        predicate: result.data.triple.predicate,
+        object: result.data.triple.object,
+        vault_id: result.data.triple.vault_id,
+        counter_vault_id: result.data.triple.counter_vault_id,
         vault_position_count: vaultPositionCount,
         counter_vault_position_count: counterVaultPositionCount
       };
     } catch (error) {
-      console.error(`Error fetching details for triple ${tripleId}:`, error);
       if (onError) {
         onError(`Error fetching details for triple ${tripleId}: ${error instanceof Error ? error.message : String(error)}`);
       }

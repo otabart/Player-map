@@ -42,19 +42,16 @@ export const useDepositTriple = ({
       });
 
       if (!response.ok) {
-        console.error(`GraphQL request failed with status ${response.status}`);
         return null;
       }
 
       const result = await response.json();
 
       if (result.errors) {
-        console.error("GraphQL errors:", result.errors);
         return null;
       }
 
       if (!result.data?.triple) {
-        console.warn(`Triple with ID ${tripleId} not found`);
         return null;
       }
 
@@ -64,7 +61,6 @@ export const useDepositTriple = ({
         ...result.data.triple
       };
     } catch (error) {
-      console.error(`Error fetching details for triple ${tripleId}:`, error);
       return null;
     }
   };
@@ -106,11 +102,9 @@ export const useDepositTriple = ({
       let targetId: string;
       if (direction === VoteDirection.For) {
         targetId = tripleDetails.vault_id || tripleDetails.id;
-        console.log(`Voting FOR triple ${claimId}, using vault_id: ${targetId}`);
       } else {
         // If it's a vote against, use counter_vault_id if it exists
         targetId = tripleDetails.counter_vault_id || tripleDetails.id;
-        console.log(`Voting AGAINST triple ${claimId}, using counter_vault_id: ${targetId}`);
       }
 
       // Calculate value in wei
@@ -129,8 +123,6 @@ export const useDepositTriple = ({
         gas: 300000n    // Gas limit for a single transaction
       });
 
-      console.log("Transaction sent, hash:", txHash);
-
       // Wait for confirmation
       let receipt;
       if (walletConnected.waitForTransactionReceipt) {
@@ -147,7 +139,6 @@ export const useDepositTriple = ({
         hash: typeof txHash === "string" ? txHash : txHash.hash,
       };
     } catch (error) {
-      console.error("Error depositing stake:", error);
       setIsLoading(false);
 
       return {
