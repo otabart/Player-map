@@ -1,4 +1,7 @@
 import { default as React } from 'react';
 
-declare const PlayerMapGraph: React.FC;
+interface PlayerMapGraphProps {
+    walletAddress?: string;
+}
+declare const PlayerMapGraph: React.FC<PlayerMapGraphProps>;
 export default PlayerMapGraph;
