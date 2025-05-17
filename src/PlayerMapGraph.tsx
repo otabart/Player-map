@@ -8,8 +8,18 @@ interface PlayerMapGraphProps {
   walletAddress?: string;
 }
 
+// Définir les types pour les props des composants
+interface GraphVisualizationProps {
+  endpoint: string;
+  onNodeSelect: (node: any) => void;
+  onLoadingChange: (isLoading: boolean) => void;
+  walletAddress?: string;
+}
+
+interface LoadingAnimationProps {}
+
 const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress }) => {
-  const [selectedNode, setSelectedNode] = useState(null);
+  const [selectedNode, setSelectedNode] = useState<any>(null);
   const [selectedEndpoint, setSelectedEndpoint] = useState("base"); // TODO: change to mainnet
   const [isLoading, setIsLoading] = useState(false);
 

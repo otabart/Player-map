@@ -11,6 +11,8 @@ import { ConnectWalletModal, CreatePlayerModal } from "../modals";
 import { useTripleByCreator } from "../../hooks/useTripleByCreator";
 import { PLAYER_TRIPLE_TYPES } from "../../utils/constants";
 import RegistrationForm from "../../RegistrationForm";
+import { useNetworkCheck } from '../../shared/hooks/useNetworkCheck';
+import { NetworkSwitchMessage } from '../../shared/components/NetworkSwitchMessage';
 
 interface ClaimVotingProps {
   walletConnected?: any;
@@ -139,6 +141,11 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
     }
   };
 
+  const { isCorrectNetwork, currentChainId, targetChainId } = useNetworkCheck({
+    walletConnected,
+    publicClient
+  });
+
   // Si l'utilisateur n'a pas connecté son wallet, afficher juste la modale de connexion
   if (!isWalletReady) {
     return (
@@ -240,6 +247,13 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
         numberOfTransactions={numberOfTransactions}
       />
       <TransactionStatusDisplay transactionStatus={transactionStatus} />
+      
+      {!isCorrectNetwork && (
+        <NetworkSwitchMessage
+          currentChainId={currentChainId}
+          targetChainId={targetChainId}
+        />
+      )}
     </div>
   );
 }; 
