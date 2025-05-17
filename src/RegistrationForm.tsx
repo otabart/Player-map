@@ -9,6 +9,8 @@ import {
 import { ipfsToHttpUrl, isIpfsUrl, uploadToPinata } from "./utils/pinata";
 import PlayerCreationProgress from "./PlayerCreationProgress";
 import { usePlayerCreationService } from "./services/playerCreationService";
+import { useNetworkCheck } from "./shared/hooks/useNetworkCheck";
+import { NetworkSwitchMessage } from "./shared/components/NetworkSwitchMessage";
 
 interface RegistrationFormProps {
   isOpen: boolean;
@@ -69,6 +71,11 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
     walletAddress || '',
     publicClient
   );
+
+  const { isCorrectNetwork, currentChainId, targetChainId } = useNetworkCheck({
+    walletConnected,
+    publicClient: wagmiConfig?.publicClient
+  });
 
   useEffect(() => {
     const checkExistingAtom = async () => {
@@ -178,6 +185,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
       // Close the form after 3 seconds
       setTimeout(() => {
         onClose();
+        window.location.reload();
       }, 3000);
     } catch (error) {
       console.error("Error creating player:", error);
@@ -271,24 +279,31 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           Create Your Player
         </h2>
 
-        <PlayerCreationProgress
-          step={step}
-          isCreatingAtom={isCreatingAtom}
-          isCreatingTriples={isCreatingTriples}
-          creationSuccess={creationSuccess}
-          atomId={atomId}
-          tripleCreated={tripleCreated}
-          walletAddress={walletAddress}
-          hasExistingAtom={hasExistingAtom}
-          formData={formData}
-          handleInputChange={handleInputChange}
-          handleSelectChange={handleSelectChange}
-          handleFileUpload={handleFileUpload}
-          handleSubmit={handleSubmit}
-          isLoading={isLoading}
-          isUploading={isUploading}
-          fileInputRef={fileInputRef}
-        />
+        {!isCorrectNetwork ? (
+          <NetworkSwitchMessage
+            currentChainId={currentChainId}
+            targetChainId={targetChainId}
+          />
+        ) : (
+          <PlayerCreationProgress
+            step={step}
+            isCreatingAtom={isCreatingAtom}
+            isCreatingTriples={isCreatingTriples}
+            creationSuccess={creationSuccess}
+            atomId={atomId}
+            tripleCreated={tripleCreated}
+            walletAddress={walletAddress}
+            hasExistingAtom={hasExistingAtom}
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleSelectChange={handleSelectChange}
+            handleFileUpload={handleFileUpload}
+            handleSubmit={handleSubmit}
+            isLoading={isLoading}
+            isUploading={isUploading}
+            fileInputRef={fileInputRef}
+          />
+        )}
       </div>
     </div>
   );
