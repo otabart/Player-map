@@ -185,6 +185,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
       // Close the form after 3 seconds
       setTimeout(() => {
         onClose();
+        window.location.reload();
       }, 3000);
     } catch (error) {
       console.error("Error creating player:", error);
