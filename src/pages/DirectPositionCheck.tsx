@@ -30,8 +30,8 @@ const DirectPositionCheck: React.FC = () => {
     object: 'The Alchemists',
     units: 0,
     direction: VoteDirection.None,
-    vault_position_count: 2,
-    counter_vault_position_count: 2,
+    term_position_count: 2,
+    counter_term_position_count: 2,
     userHasPosition: false,
     userPositionDirection: VoteDirection.None
   };

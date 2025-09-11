@@ -73,17 +73,18 @@ export const useBatchCreateTriple = ({ walletConnected, walletAddress, publicCli
     }
 
     try {
-      // Préparation des arrays pour la fonction batchCreateTriple
-      const subjectIds = triples.map((t) => t.subjectId);
-      const predicateIds = triples.map((t) => t.predicateId);
-      const objectIds = triples.map((t) => t.objectId);
+      // Préparation des arrays pour la fonction createTriples (v2)
+      const subjectIds = triples.map((t) => `0x${t.subjectId.toString(16).padStart(64, '0')}` as `0x${string}`);
+      const predicateIds = triples.map((t) => `0x${t.predicateId.toString(16).padStart(64, '0')}` as `0x${string}`);
+      const objectIds = triples.map((t) => `0x${t.objectId.toString(16).padStart(64, '0')}` as `0x${string}`);
+      const assets = triples.map(() => VALUE_PER_TRIPLE); // Ajouté le paramètre assets
 
       // Appel au contrat
       const txHash = await walletConnected.writeContract({
         address: ATOM_CONTRACT_ADDRESS,
         abi: atomABI,
-        functionName: "batchCreateTriple",
-        args: [subjectIds, predicateIds, objectIds],
+        functionName: "createTriples", // Changé de "batchCreateTriple" à "createTriples"
+        args: [subjectIds, predicateIds, objectIds, assets], // Ajouté le paramètre assets
         value: VALUE_PER_TRIPLE * BigInt(triples.length), // Valeur pour chaque triple
       });
 

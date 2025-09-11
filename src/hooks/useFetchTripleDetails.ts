@@ -14,10 +14,10 @@ export interface TripleDetails {
   object?: {
     label: string;
   };
-  vault_id?: string;
-  vault_position_count?: number;
-  counter_vault_id?: string;
-  counter_vault_position_count?: number;
+  term_id?: string;
+  term_position_count?: number;
+  counter_term_id?: string;
+  counter_term_position_count?: number;
 }
 
 interface UseFetchTripleDetailsProps {
@@ -44,7 +44,7 @@ export const useFetchTripleDetails = ({
         body: JSON.stringify({
           query: `
             query Triple($tripleId: numeric!) {
-              triple(id: $tripleId) {
+              triple(term_id: $tripleId) {
                 id
                 subject {
                   label
@@ -55,12 +55,12 @@ export const useFetchTripleDetails = ({
                 object {
                   label
                 }
-                vault_id
-                vault {
+                term_id
+                term {
                   position_count
                 }
-                counter_vault_id
-                counter_vault {
+                counter_term_id
+                counter_term {
                   position_count
                 }
               }
@@ -98,10 +98,10 @@ export const useFetchTripleDetails = ({
         subject: result.data.triple.subject,
         predicate: result.data.triple.predicate,
         object: result.data.triple.object,
-        vault_id: result.data.triple.vault_id,
-        counter_vault_id: result.data.triple.counter_vault_id,
-        vault_position_count: vaultPositionCount,
-        counter_vault_position_count: counterVaultPositionCount
+        term_id: result.data.triple.term_id,
+        counter_term_id: result.data.triple.counter_term_id,
+        term_position_count: vaultPositionCount,
+        counter_term_position_count: counterVaultPositionCount
       };
     } catch (error) {
       if (onError) {

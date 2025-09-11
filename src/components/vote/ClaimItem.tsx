@@ -11,11 +11,10 @@ interface ClaimItemProps {
   walletAddress?: string;
   network?: Network;
 }
-
-export const ClaimItem: React.FC<ClaimItemProps> = ({ 
-  voteItem, 
-  onChangeUnits, 
-  isVoteDirectionAllowed,
+export const ClaimItem: React.FC<ClaimItemProps> = ({
+  voteItem,
+  onChangeUnits,
+  isVoteDirectionAllowed = () => true,
   walletAddress = "",
   network = Network.MAINNET
 }) => {
@@ -26,8 +25,8 @@ export const ClaimItem: React.FC<ClaimItemProps> = ({
     object, 
     units, 
     direction, 
-    vault_position_count = 0, 
-    counter_vault_position_count = 0,
+    term_position_count = 0, 
+    counter_term_position_count = 0,
     userHasPosition: initialUserHasPosition = false,
     userPositionDirection: initialUserPositionDirection = VoteDirection.None
   } = voteItem;
@@ -418,7 +417,7 @@ export const ClaimItem: React.FC<ClaimItemProps> = ({
             borderRadius: "4px",
             fontWeight: "bold"
           }}>
-            {vault_position_count} positions
+            {term_position_count} positions
         </div>
         
         <div style={{
@@ -430,7 +429,7 @@ export const ClaimItem: React.FC<ClaimItemProps> = ({
             borderRadius: "4px",
             fontWeight: "bold"
           }}>
-            {counter_vault_position_count} positions
+            {counter_term_position_count} positions
         </div>
       </div>
     </div>

@@ -30,10 +30,10 @@ export const useDepositTriple = ({
         body: JSON.stringify({
           query: `
             query Triple($tripleId: numeric!) {
-              triple(id: $tripleId) {
+              triple(term_id: $tripleId) {
                 id
-                vault_id
-                counter_vault_id
+                term_id
+                counter_term_id
               }
             }
           `,
@@ -101,10 +101,10 @@ export const useDepositTriple = ({
       // Determine which ID to use based on vote direction
       let targetId: string;
       if (direction === VoteDirection.For) {
-        targetId = tripleDetails.vault_id || tripleDetails.id;
+        targetId = tripleDetails.term_id || tripleDetails.id;
       } else {
-        // If it's a vote against, use counter_vault_id if it exists
-        targetId = tripleDetails.counter_vault_id || tripleDetails.id;
+        // If it's a vote against, use counter_term_id if it exists
+        targetId = tripleDetails.counter_term_id || tripleDetails.id;
       }
 
       // Calculate value in wei

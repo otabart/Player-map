@@ -44,8 +44,8 @@ export const useVoteItemsManagement = ({
           if (position.is_for !== undefined) {
             const direction = position.is_for ? VoteDirection.For : VoteDirection.Against;
             positions[String(tripleId)] = direction;
-          } else if (position.vault_id && position.counter_vault_id) {
-            // Si la position a des vault_id qui peuvent indiquer la direction
+          } else if (position.term_id && position.counter_term_id) {
+            // Si la position a des term_id qui peuvent indiquer la direction
             // Logique à déterminer en fonction de la structure exacte
           }
         });
@@ -68,30 +68,30 @@ export const useVoteItemsManagement = ({
               // Déterminer la direction en fonction de la structure
               if (userPosition.is_for !== undefined) {
                 positions[String(triple.id)] = userPosition.is_for ? VoteDirection.For : VoteDirection.Against;
-              } else if (userPosition.vault_id && triple.vault_id === userPosition.vault_id) {
+              } else if (userPosition.term_id && triple.term_id === userPosition.term_id) {
                 positions[String(triple.id)] = VoteDirection.For;
-              } else if (userPosition.vault_id && triple.counter_vault_id === userPosition.vault_id) {
+              } else if (userPosition.term_id && triple.counter_term_id === userPosition.term_id) {
                 positions[String(triple.id)] = VoteDirection.Against;
               }
             }
           }
 
           // Structure 2: Positions dans les vaults
-          const vaultPositions = triple.vault?.positions || [];
-          const counterVaultPositions = triple.counter_vault?.positions || [];
+          const termPositions = triple.term?.positions || [];
+          const counterTermPositions = triple.counter_term?.positions || [];
 
           // Check if user has a position in either vault
-          const userVaultPosition = vaultPositions.find((position: any) => {
+          const userTermPosition = termPositions.find((position: any) => {
             return position.account?.id?.toLowerCase() === walletAddress.toLowerCase();
           });
 
-          const userCounterVaultPosition = counterVaultPositions.find((position: any) => {
+          const userCounterTermPosition = counterTermPositions.find((position: any) => {
             return position.account?.id?.toLowerCase() === walletAddress.toLowerCase();
           });
 
-          if (userVaultPosition) {
+          if (userTermPosition) {
             positions[String(triple.id)] = VoteDirection.For;
-          } else if (userCounterVaultPosition) {
+          } else if (userCounterTermPosition) {
             positions[String(triple.id)] = VoteDirection.Against;
           }
         });
@@ -106,9 +106,9 @@ export const useVoteItemsManagement = ({
 
           if (item.is_for !== undefined) {
             positions[String(tripleId)] = item.is_for ? VoteDirection.For : VoteDirection.Against;
-          } else if (item.vault_id && item.triple?.vault_id === item.vault_id) {
+          } else if (item.term_id && item.triple?.term_id === item.term_id) {
             positions[String(tripleId)] = VoteDirection.For;
-          } else if (item.vault_id && item.triple?.counter_vault_id === item.vault_id) {
+          } else if (item.term_id && item.triple?.counter_term_id === item.term_id) {
             positions[String(tripleId)] = VoteDirection.Against;
           }
         });
@@ -173,10 +173,10 @@ export const useVoteItemsManagement = ({
           object: details.object?.label || `Object ${id}`,
           units: 0,
           direction: VoteDirection.None,
-          vault_id: details.vault_id,
-          vault_position_count: details.vault_position_count || 0,
-          counter_vault_id: details.counter_vault_id,
-          counter_vault_position_count: details.counter_vault_position_count || 0,
+          term_id: details.term_id,
+          term_position_count: details.term_position_count || 0,
+          counter_term_id: details.counter_term_id,
+          counter_term_position_count: details.counter_term_position_count || 0,
           userHasPosition: userPositionDirection !== VoteDirection.None,
           userPositionDirection,
         } as VoteItem;

@@ -54,8 +54,8 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
     triples: playerTriples,
   } = useTripleByCreator(
     lowerCaseAddress, 
-    Number(PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId), 
-    Number(PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId), 
+    PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId.toString(), 
+    PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId.toString(), 
     network
   );
   
@@ -141,7 +141,7 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
     }
   };
 
-  const { isCorrectNetwork, currentChainId, targetChainId } = useNetworkCheck({
+  const { isCorrectNetwork, currentChainId, targetChainId, allowedChainIds } = useNetworkCheck({
     walletConnected,
     publicClient
   });
@@ -249,7 +249,7 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
       <TransactionStatusDisplay transactionStatus={transactionStatus} />
       
       {!isCorrectNetwork && (
-        <NetworkSwitchMessage
+        <NetworkSwitchMessage allowedChainIds={allowedChainIds}
           currentChainId={currentChainId}
           targetChainId={targetChainId}
         />

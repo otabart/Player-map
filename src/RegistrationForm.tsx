@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { getEventSelector, toHex, getAddress } from "viem";
 import IntuitionLogo from "./assets/img/logo.svg";
 import {
   ATOM_CONTRACT_ADDRESS,
@@ -72,32 +73,54 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
     publicClient
   );
 
-  const { isCorrectNetwork, currentChainId, targetChainId } = useNetworkCheck({
+  const { isCorrectNetwork, currentChainId, targetChainId, allowedChainIds } = useNetworkCheck({
     walletConnected,
     publicClient: wagmiConfig?.publicClient
   });
 
   useEffect(() => {
     const checkExistingAtom = async () => {
-      if (!walletAddress || !walletConnected) return;
+      if (!walletAddress || !publicClient) return;
 
       try {
-        // Check with balanceOf
-        const balance = await walletConnected.readContract({
-          address: ATOM_CONTRACT_ADDRESS,
-          abi: atomABI,
-          functionName: "balanceOf",
-          args: [walletAddress],
+        // Utiliser getEventSelector pour calculer la signature de l'événement AtomCreated
+        const eventHash = getEventSelector("AtomCreated(address,address,bytes,uint256)");
+
+        // Utiliser fetch directement pour contourner le bug viem
+        const response = await fetch('https://testnet.rpc.intuition.systems', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'eth_getLogs',
+            params: [{
+              address: ATOM_CONTRACT_ADDRESS,
+              topics: [
+                eventHash,
+                walletAddress
+              ],
+              fromBlock: '0x0',
+              toBlock: 'latest'
+            }],
+            id: 1
+          })
         });
 
-        setHasExistingAtom(balance > 0);
+        const data = await response.json();
+        const logs = data.result || [];
+        
+        console.log("Found logs:", logs.length);
+        setHasExistingAtom(logs.length > 0);
       } catch (error) {
-        console.error("Error checking atom balance:", error);
+        console.error("Error checking atom ownership:", error);
+        setHasExistingAtom(false);
       }
     };
 
     checkExistingAtom();
-  }, [walletAddress, walletConnected]);
+  }, [walletAddress, publicClient]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

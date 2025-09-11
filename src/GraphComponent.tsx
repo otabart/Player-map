@@ -6,6 +6,8 @@ import PlayerMapGraph from "./PlayerMapGraph";
 import RegistrationForm from "./RegistrationForm";
 import { PLAYER_TRIPLE_TYPES } from "./utils/constants";
 import { ConnectWalletModal } from "./components/modals";
+import { PlayerMapQueryClientProvider } from "./contexts/QueryClientContext";
+import initGraphql from "./config/graphql";
 
 interface GraphComponentProps {
   walletConnected?: boolean;
@@ -27,6 +29,11 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
   onCreatePlayer,
   onConnectWallet,
 }) => {
+  // Initialiser GraphQL au démarrage du composant
+  useEffect(() => {
+    initGraphql();
+  }, []);
+
   // État pour suivre le réseau actuel (par défaut testnet)
   const [network, setNetwork] = useState<Network>(Network.MAINNET);
   
@@ -36,7 +43,7 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
   // État pour la détection du wallet (plus fiable)
   const [isWalletReady, setIsWalletReady] = useState(false);
 
-  const lowerCaseAddress = walletAddress ? walletAddress.toLowerCase() : "";
+  const lowerCaseAddress = walletAddress ? walletAddress : "";
 
   // Vérifier si le wallet est réellement connecté
   useEffect(() => {
@@ -50,7 +57,7 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
     loading: tripleLoading,
     error: tripleError,
     triples: playerTriples,
-  } = useTripleByCreator(lowerCaseAddress, Number(PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId), Number(PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId), network);
+  } = useTripleByCreator(lowerCaseAddress, PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId.toString(), PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId.toString(), network);
 
   // Vérifie si l'utilisateur a un player atom
   const hasPlayerAtom = playerTriples.length > 0;
@@ -84,115 +91,110 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
     }
   }, [onConnectWallet]);
 
-  // Si en chargement, afficher un indicateur de chargement
-  if (isLoading && isWalletReady) {
+  // Gestion des erreurs de chargement
+  if (hasError) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          backgroundColor: "#101020",
-          color: "#fff",
-        }}
-      >
-        <div style={{ textAlign: "center" }}>
-          <h2 style={{ color: "#6c5ce7", marginBottom: "20px" }}>Uploading datas playeur...</h2>
-          <div 
-            style={{ 
-              width: "50px", 
-              height: "50px", 
-              border: "5px solid #151525", 
-              borderTop: "5px solid #6c5ce7", 
-              borderRadius: "50%",
-              margin: "0 auto",
-              animation: "spin 1s linear infinite"
-            }} 
-          />
-          <style>
-            {`
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-            `}
-          </style>
-        </div>
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "center", 
+        alignItems: "center", 
+        height: "100%",
+        flexDirection: "column",
+        gap: "20px"
+      }}>
+        <h2 style={{ color: "red", textAlign: "center" }}>
+          Erreur lors du chargement des données
+        </h2>
+        <p style={{ textAlign: "center", color: "#666" }}>
+          {hasError.message || "Une erreur inattendue s'est produite"}
+        </p>
+        <button 
+          onClick={() => window.location.reload()}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#FFD32A",
+            color: "#000",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer"
+          }}
+        >
+          Recharger la page
+        </button>
       </div>
     );
   }
 
-  // Si erreur, afficher le message d'erreur
-  if (hasError && isWalletReady) {
+  // Affichage de chargement
+  if (isLoading) {
     return (
-      <div
-        style={{
-          margin: "20px",
-          padding: "30px",
-          borderRadius: "8px",
-          backgroundColor: "#1a1a2e",
-          color: "#fff",
-        }}
-      >
-        <h2 style={{ color: "#6c5ce7", marginBottom: "20px" }}>Player Map</h2>
-        <div
-          style={{
-            padding: "20px",
-            backgroundColor: "#151525",
-            borderRadius: "6px",
-            color: "#ff6b6b",
-          }}
-        >
-          <h3>Error to uploading datas</h3>
-          <p>{tripleError?.message || "Unknow error"}</p>
-        </div>
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "center", 
+        alignItems: "center", 
+        height: "100%",
+        flexDirection: "column",
+        gap: "20px"
+      }}>
+        <div style={{
+          width: "50px",
+          height: "50px",
+          border: "4px solid #FFD32A",
+          borderTop: "4px solid transparent",
+          borderRadius: "50%",
+          animation: "spin 1s linear infinite"
+        }} />
+        <p style={{ textAlign: "center", color: "#666" }}>
+          Chargement des données du joueur...
+        </p>
       </div>
     );
   }
 
   // Logique principale d'affichage
   return (
-    <div style={{ position: "relative", width: "100%", height: "100%" }}>
-      {/* Utiliser notre nouvelle modal de connexion wallet */}
-      <ConnectWalletModal
-        isOpen={!isWalletReady}
-        onConnectWallet={handleConnectWallet}
-      />
+    <PlayerMapQueryClientProvider>
+      <div style={{ position: "relative", width: "100%", height: "100%" }}>
+        {/* Utiliser notre nouvelle modal de connexion wallet */}
+        <ConnectWalletModal
+          isOpen={!isWalletReady}
+          onConnectWallet={handleConnectWallet}
+        />
 
-      {/* Affichage du PlayerMapHome, soit blurred en arrière-plan si wallet non connecté, soit normale si wallet connecté mais pas de player */}
-      {(!isWalletReady || (isWalletReady && !hasPlayerAtom)) && (
-        <div style={{ 
-          filter: !isWalletReady ? "blur(3px)" : "none", 
-          opacity: !isWalletReady ? 0.7 : 1,
-          position: "relative"
-        }}>
-          <PlayerMapHome 
-            walletConnected={isWalletReady}
-            walletAddress={walletAddress}
-            wagmiConfig={wagmiConfig}
-            walletHooks={walletHooks}
-            // Passer notre propre gestionnaire de clic, pas celui externe
-            onCreatePlayer={handleCreatePlayer}
-          />
-        </div>
-      )}
+        {/* Affichage du PlayerMapHome, soit blurred en arrière-plan si wallet non connecté, soit normale si wallet connecté mais pas de player */}
+        {(!isWalletReady || (isWalletReady && !hasPlayerAtom)) && (
+          <div style={{ 
+            filter: !isWalletReady ? "blur(3px)" : "none", 
+            opacity: !isWalletReady ? 0.7 : 1,
+            position: "relative"
+          }}>
+            <PlayerMapHome 
+              walletConnected={isWalletReady}
+              walletAddress={walletAddress}
+              wagmiConfig={wagmiConfig}
+              walletHooks={walletHooks}
+              // Passer notre propre gestionnaire de clic, pas celui externe
+              onCreatePlayer={handleCreatePlayer}
+            />
+          </div>
+        )}
 
-      {/* Si wallet connecté et player atom trouvé, afficher le PlayerMapGraph */}
-      {isWalletReady && hasPlayerAtom && (
-        <PlayerMapGraph walletAddress={walletAddress} />
-      )}
+        {/* Si wallet connecté et player atom trouvé, afficher le PlayerMapGraph */}
+        {isWalletReady && hasPlayerAtom && (
+          <PlayerMapGraph walletAddress={walletAddress} />
+        )}
 
-      {/* Formulaire d'inscription - géré directement par GraphComponent */}
-      <RegistrationForm
-        isOpen={isRegistrationFormOpen}
-        onClose={handleCloseRegistrationForm}
-        walletConnected={walletConnected}
-        walletAddress={walletAddress}
-        wagmiConfig={wagmiConfig}
-        walletHooks={walletHooks}
-      />
-    </div>
+        {/* Formulaire d'inscription - géré directement par GraphComponent avec le QueryClient local */}
+        <RegistrationForm
+          isOpen={isRegistrationFormOpen}
+          onClose={handleCloseRegistrationForm}
+          walletConnected={walletConnected}
+          walletAddress={walletAddress}
+          wagmiConfig={wagmiConfig}
+          walletHooks={walletHooks}
+        />
+      </div>
+    </PlayerMapQueryClientProvider>
   );
 };
 
