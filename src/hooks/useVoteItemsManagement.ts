@@ -133,7 +133,11 @@ export const useVoteItemsManagement = ({
 
   // Load triple details when hook is initialized
   useEffect(() => {
-    loadTripleDetails();
+    try {
+      loadTripleDetails();
+    } catch (error) {
+      console.error("Error in loadTripleDetails:", error);
+    }
   }, []);
 
   // Update total units when voteItems change
@@ -152,7 +156,7 @@ export const useVoteItemsManagement = ({
 
         if (!details) {
           return {
-            id,
+            id: BigInt(id),
             subject: `Claim ${id}`,
             predicate: "is",
             object: "Unknown",

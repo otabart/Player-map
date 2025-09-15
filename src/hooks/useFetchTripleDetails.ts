@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Network, API_URLS } from "./useAtomData";
 import { GetTripleDocument, fetcher } from '@0xintuition/graphql';
 
-// Interface for triple details returned from GraphQL
+// Interface for triple details returned from GraphQL v2
 export interface TripleDetails {
   id: string;
   subject?: {
@@ -31,42 +31,51 @@ export const useFetchTripleDetails = ({
 }: UseFetchTripleDetailsProps = {}) => {
   const [isLoading, setIsLoading] = useState(false);
 
-  // Function to fetch triple details via GraphQL
-  const fetchTripleDetails = async (tripleId: bigint): Promise<TripleDetails | null> => {
+  // Function to fetch triple details via GraphQL v2
+  const fetchTripleDetails = async (tripleId: string): Promise<TripleDetails | null> => {
     setIsLoading(true);
 
     try {
-      // Utilisons directement la méthode fetch qui est plus fiable
+      // Utiliser le package @0xintuition/graphql pour v2
       const apiUrl = API_URLS[network];
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: `
-            query Triple($tripleId: numeric!) {
-              triple(term_id: $tripleId) {
-                id
-                subject {
-                  label
-                }
-                predicate {
-                  label
-                }
-                object {
-                  label
-                }
+          query Triple($tripleId: String!) {
+            triple(term_id: $tripleId) {
+              term_id
+              subject_id
+              predicate_id
+              object_id
+              subject {
                 term_id
-                term {
-                  position_count
-                }
-                counter_term_id
-                counter_term {
-                  position_count
-                }
+                label
+              }
+              predicate {
+                term_id
+                label
+              }
+              object {
+                term_id
+                label
+              }
+              term_id
+              term {
+                total_market_cap
+                total_assets
+              }
+              counter_term_id
+              counter_term {
+                total_market_cap
+                total_assets
               }
             }
-          `,
-          variables: { tripleId: Number(tripleId) },
+          }
+        `,
+
+          variables: { tripleId: tripleId.toString() }, // Convertir en string pour v2
         }),
       });
 
@@ -88,9 +97,9 @@ export const useFetchTripleDetails = ({
         return null;
       }
 
-      // Extract position counts from the nested structure if available
-      const vaultPositionCount = result.data.triple.vault?.position_count || 0;
-      const counterVaultPositionCount = result.data.triple.counter_vault?.position_count || 0;
+      // Extract position counts from the nested structure v2
+      const termPositionCount = result.data.triple.term?.positions_aggregate?.aggregate?.count || 0;
+      const counterTermPositionCount = result.data.triple.counter_term?.positions_aggregate?.aggregate?.count || 0;
 
       setIsLoading(false);
       return {
@@ -100,10 +109,11 @@ export const useFetchTripleDetails = ({
         object: result.data.triple.object,
         term_id: result.data.triple.term_id,
         counter_term_id: result.data.triple.counter_term_id,
-        term_position_count: vaultPositionCount,
-        counter_term_position_count: counterVaultPositionCount
+        term_position_count: termPositionCount,
+        counter_term_position_count: counterTermPositionCount
       };
     } catch (error) {
+
       if (onError) {
         onError(`Error fetching details for triple ${tripleId}: ${error instanceof Error ? error.message : String(error)}`);
       }
@@ -116,4 +126,4 @@ export const useFetchTripleDetails = ({
     fetchTripleDetails,
     isLoading
   };
-}; 
+};

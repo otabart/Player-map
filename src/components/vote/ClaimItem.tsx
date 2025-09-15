@@ -39,10 +39,12 @@ export const ClaimItem: React.FC<ClaimItemProps> = ({
   const { 
     hasPosition: directHasPosition, 
     isFor: directIsFor, 
-    loading: checkingPosition 
+    loading: checkingPosition,
+    termPositionCount,
+    counterTermPositionCount,
   } = useCheckSpecificTriplePosition({
     walletAddress,
-    tripleId: String(id),
+    tripleId: `0x${id.toString(16).padStart(64, '0')}`,
     network
   });
   
@@ -76,7 +78,6 @@ export const ClaimItem: React.FC<ClaimItemProps> = ({
   const canVoteAgainst = isVoteDirectionAllowed 
     ? isVoteDirectionAllowed(id, VoteDirection.Against) 
     : !userHasPosition || userPositionDirection === VoteDirection.Against;
-  
   const handleIncreaseFor = () => {
     // Double vérification de l'autorisation pour voter FOR
     if (!canVoteFor) {;
@@ -123,8 +124,7 @@ export const ClaimItem: React.FC<ClaimItemProps> = ({
     } else {
       onChangeUnits(id, VoteDirection.Against, Math.abs(newValue));
     }
-  };
-  
+  };  
   const isForActive = direction === VoteDirection.For && units > 0;
   const isAgainstActive = direction === VoteDirection.Against && units > 0;
 
@@ -170,7 +170,7 @@ export const ClaimItem: React.FC<ClaimItemProps> = ({
           fontWeight: "bold",
           borderRadius: "4px"
         }}>
-          {costInEth.toFixed(3)} ETH
+          {costInEth.toFixed(2)} tTRUST
         </div>
       )}
       
@@ -417,7 +417,7 @@ export const ClaimItem: React.FC<ClaimItemProps> = ({
             borderRadius: "4px",
             fontWeight: "bold"
           }}>
-            {term_position_count} positions
+            {termPositionCount} positions
         </div>
         
         <div style={{
@@ -429,7 +429,7 @@ export const ClaimItem: React.FC<ClaimItemProps> = ({
             borderRadius: "4px",
             fontWeight: "bold"
           }}>
-            {counter_term_position_count} positions
+            {counterTermPositionCount} positions
         </div>
       </div>
     </div>

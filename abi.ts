@@ -5,8 +5,7 @@ export const VALUE_PER_ATOM = BigInt(import.meta.env.VITE_VALUE_PER_ATOM); // Va
 export const VALUE_PER_TRIPLE = BigInt(import.meta.env.VITE_VALUE_PER_TRIPLE);
 
 // Utiliser l'ABI complet d'Intuition v2
-export const atomABI =
-export const abi = [
+export const atomABI  = [
   {
     type: 'fallback',
     stateMutability: 'payable',

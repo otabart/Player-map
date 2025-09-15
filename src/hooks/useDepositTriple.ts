@@ -20,7 +20,7 @@ export const useDepositTriple = ({
   const [isLoading, setIsLoading] = useState(false);
 
   // Helper function to fetch triple details via GraphQL
-  const fetchTripleDetails = async (tripleId: bigint) => {
+  const fetchTripleDetails = async (tripleId: string) => {
     try {
       const apiUrl = API_URLS[network];
 
@@ -29,17 +29,17 @@ export const useDepositTriple = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: `
-            query Triple($tripleId: numeric!) {
+            query Triple($tripleId: String!) {
               triple(term_id: $tripleId) {
-                id
                 term_id
                 counter_term_id
               }
             }
           `,
-          variables: { tripleId: Number(tripleId) },
+          variables: { tripleId: String(tripleId) },
         }),
       });
+
 
       if (!response.ok) {
         return null;
@@ -48,10 +48,12 @@ export const useDepositTriple = ({
       const result = await response.json();
 
       if (result.errors) {
+        console.error("❌ GraphQL errors:", result.errors);
         return null;
       }
 
       if (!result.data?.triple) {
+        console.error("❌ No triple data found");
         return null;
       }
 
@@ -61,15 +63,18 @@ export const useDepositTriple = ({
         ...result.data.triple
       };
     } catch (error) {
+      console.error("❌ fetchTripleDetails error:", error);
       return null;
     }
   };
 
   // Function to deposit stake on a triple (one transaction per vote)
   const depositTriple = async (
-    claimId: bigint,
-    units: number,
-    direction: VoteDirection
+    votes: Array<{
+      claimId: string;
+      units: number;
+      direction: VoteDirection;
+    }>
   ): Promise<DepositResponse> => {
     if (!walletConnected || !walletAddress) {
       return {
@@ -77,50 +82,91 @@ export const useDepositTriple = ({
         error: "Wallet not connected",
       };
     }
-
-    if (units <= 0) {
+    
+    if (votes.length === 0) {
       return {
         success: false,
-        error: "Units must be greater than 0",
+        error: "No votes provided",
       };
+    }
+    
+    // Validate each vote
+    for (const vote of votes) {
+      if (vote.units <= 0) {
+        return {
+          success: false,
+          error: "Units must be greater than 0",
+        };
+      }
     }
 
     setIsLoading(true);
 
     try {
-      // Get triple details
-      const tripleDetails = await fetchTripleDetails(claimId);
-      if (!tripleDetails) {
-        setIsLoading(false);
-        return {
-          success: false,
-          error: "Failed to fetch triple details",
-        };
+      // Arrays pour le batch
+      const termIds: `0x${string}`[] = [];
+      const curveIds: bigint[] = [];
+      const assets: bigint[] = [];
+      const minShares: bigint[] = [];
+      
+      // Traiter chaque vote
+      for (const vote of votes) {
+        // Get triple details
+        const tripleDetails = await fetchTripleDetails(vote.claimId);
+        if (!tripleDetails) {
+          setIsLoading(false);
+          return {
+            success: false,
+            error: `Failed to fetch triple details for claim ${vote.claimId}`,
+          };
+        }
+    
+        // Determine which ID to use based on vote direction
+        let targetId: string;
+        if (vote.direction === VoteDirection.For) {
+          if (!tripleDetails.term_id) {
+            console.error("❌ term_id is undefined for FOR vote");
+            return { success: false, error: "term_id not found" };
+          }
+          targetId = tripleDetails.term_id;
+        } else {
+          if (!tripleDetails.counter_term_id) {
+            console.error("❌ counter_term_id is undefined for AGAINST vote");
+            return { success: false, error: "counter_term_id not found" };
+          }
+          targetId = tripleDetails.counter_term_id;
+        }
+    
+        // Validate targetId
+        if (!targetId) {
+          console.error("❌ targetId is undefined");
+          return { success: false, error: "targetId not found" };
+        }
+    
+        // Calculate value in wei
+        const depositValue = UNIT_VALUE * BigInt(vote.units);
+    
+        // Add to arrays
+        termIds.push(targetId as `0x${string}`);
+        curveIds.push(2n);
+        assets.push(depositValue);
+        minShares.push(0n);
       }
-
-      // Determine which ID to use based on vote direction
-      let targetId: string;
-      if (direction === VoteDirection.For) {
-        targetId = tripleDetails.term_id || tripleDetails.id;
-      } else {
-        // If it's a vote against, use counter_term_id if it exists
-        targetId = tripleDetails.counter_term_id || tripleDetails.id;
-      }
-
-      // Calculate value in wei
-      const depositValue = UNIT_VALUE * BigInt(units);
-
-      // Call depositTriple function directly on the main contract
+    
+      // Call depositBatch function
       const txHash = await walletConnected.writeContract({
         address: ATOM_CONTRACT_ADDRESS,
         abi: atomABI,
-        functionName: "depositTriple",
+        functionName: "depositBatch",
         args: [
-          walletAddress, // receiver - address that receives the shares
-          BigInt(targetId) // id - triple or vault identifier
+          walletAddress,  // receiver
+          termIds,        // termIds array
+          curveIds,       // curveIds array
+          assets,         // assets array
+          minShares       // minShares array
         ],
-        value: depositValue,
-        gas: 300000n    // Gas limit for a single transaction
+        value: assets.reduce((sum, asset) => sum + asset, 0n), // Total value
+        gas: 500000n * BigInt(votes.length) // Gas based on number of votes
       });
 
       // Wait for confirmation
@@ -140,7 +186,6 @@ export const useDepositTriple = ({
       };
     } catch (error) {
       setIsLoading(false);
-
       return {
         success: false,
         error: error instanceof Error ? error.message : String(error),

@@ -16,7 +16,8 @@ export const useCheckSpecificTriplePosition = ({
   const [isFor, setIsFor] = useState<boolean | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
-
+  const [termPositionCount, setTermPositionCount] = useState<number>(0);
+  const [counterTermPositionCount, setCounterTermPositionCount] = useState<number>(0);
   useEffect(() => {
     const fetchData = async () => {
       if (!walletAddress || !tripleId) {
@@ -34,10 +35,10 @@ export const useCheckSpecificTriplePosition = ({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             query: `
-              query GetTripleUserPosition($tripleId: numeric!, $walletAddress: String!) {
+              query GetTripleUserPosition($tripleId: String!, $walletAddress: String!) {
                 # Get the triple with vault information
                 triple(term_id: $tripleId) {
-                  id
+                  term_id
                   subject {
                     label
                   }
@@ -50,7 +51,7 @@ export const useCheckSpecificTriplePosition = ({
                   term_id
                   counter_term_id
                   
-                  # Get vault positions
+                  # Get vault positions (user only)
                   term {
                     id
                     positions_aggregate(where: {account: {id: {_ilike: $walletAddress}}}) {
@@ -63,7 +64,7 @@ export const useCheckSpecificTriplePosition = ({
                     }
                   }
                   
-                  # Get counter vault positions
+                  # Get counter vault positions (user only)
                   counter_term {
                     id
                     positions_aggregate(where: {account: {id: {_ilike: $walletAddress}}}) {
@@ -79,7 +80,7 @@ export const useCheckSpecificTriplePosition = ({
               }
             `,
             variables: {
-              tripleId: Number(tripleId),
+              tripleId: String(tripleId),
               walletAddress: walletAddress.toLowerCase()
             },
           }),
@@ -105,20 +106,18 @@ export const useCheckSpecificTriplePosition = ({
           return;
         }
 
-        const hasTermPosition =
-          tripleInfo.term?.positions_aggregate?.aggregate?.count > 0 ||
-          tripleInfo.term?.positions_aggregate?.nodes?.length > 0;
-
-        const hasCounterTermPosition =
-          tripleInfo.counter_term?.positions_aggregate?.aggregate?.count > 0 ||
-          tripleInfo.counter_term?.positions_aggregate?.nodes?.length > 0;
+        const hasTermPositions = tripleInfo.term?.positions_aggregate?.aggregate?.count > 0 || tripleInfo.term?.positions_aggregate?.nodes?.length > 0;
+        const hasCounterTermPositions = tripleInfo.counter_term?.positions_aggregate?.aggregate?.count > 0 || tripleInfo.counter_term?.positions_aggregate?.nodes?.length > 0;
+        setTermPositionCount(tripleInfo.term?.positions_aggregate?.aggregate?.count || 0);
+        setCounterTermPositionCount(tripleInfo.counter_term?.positions_aggregate?.aggregate?.count || 0);
 
         // Set states based on position findings
-        const foundPosition = hasTermPosition || hasCounterTermPosition;
+        const foundPosition = hasTermPositions || hasCounterTermPositions;
+        
         setHasPosition(foundPosition);
 
         if (foundPosition) {
-          setIsFor(hasTermPosition);
+          setIsFor(hasTermPositions);
         }
 
         setLoading(false);
@@ -132,5 +131,5 @@ export const useCheckSpecificTriplePosition = ({
     fetchData();
   }, [walletAddress, tripleId, network]);
 
-  return { hasPosition, isFor, loading, error };
+  return { hasPosition, isFor, loading, error, termPositionCount, counterTermPositionCount };
 }; 

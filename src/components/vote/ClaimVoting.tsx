@@ -45,15 +45,12 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
   // Vérifier si le wallet est connecté
   const [isWalletReady, setIsWalletReady] = useState(false);
   
-  // Vérifier si l'utilisateur a un player
-  const lowerCaseAddress = walletAddress ? walletAddress.toLowerCase() : "";
-  
   // Vérifier si l'utilisateur a un Player atom sur le jeu
   const {
     loading: tripleLoading,
     triples: playerTriples,
   } = useTripleByCreator(
-    lowerCaseAddress, 
+    walletAddress || "", 
     PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId.toString(), 
     PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId.toString(), 
     network
@@ -88,7 +85,7 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
     isVoteDirectionAllowed
   } = useVoteItemsManagement({
     network,
-    walletAddress: lowerCaseAddress,
+    walletAddress: walletAddress,
     onError: (message) => {
       setTransactionStatus({
         status: "error",
@@ -236,7 +233,7 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
         voteItems={voteItems}
         onChangeUnits={handleChangeUnits}
         isVoteDirectionAllowed={isVoteDirectionAllowed}
-        walletAddress={lowerCaseAddress}
+        walletAddress={walletAddress}
         network={network}
       />
       <SubmitButton
