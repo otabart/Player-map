@@ -37,6 +37,10 @@
 
 // ** TESTNET **
 
+// Prédicats communs
+export const COMMON_PREDICATES = {
+  FOLLOWS: "0x8f9b5dc2e7b8bd12f6762c839830672f1d13c08e72b5f09f194cafc153f2df8a", // prédicat --> follows
+};
 
 // Types de triples pour les joueurs
 export const PLAYER_TRIPLE_TYPES = {
