@@ -4,28 +4,28 @@ import { PLAYER_TRIPLE_TYPES } from "../utils/constants";
 import { GetTriplesDocument, fetcher } from '@0xintuition/graphql';
 
 export interface Triple {
-  id: string;
+  term_id: string;  // ← Changé de 'id' à 'term_id'
   subject_id: string;
   predicate_id: string;
   object_id: string;
   subject: {
-    id: string;
+    term_id: string;  // ← Changé de 'id' à 'term_id'
     label: string;
     type: string;
     creator_id: string;
   };
   predicate: {
-    id: string;
+    term_id: string;  // ← Changé de 'id' à 'term_id'
     label: string;
     type: string;
   };
   object: {
-    id: string;
+    term_id: string;  // ← Changé de 'id' à 'term_id'
     label: string;
     type: string;
   };
   block_number: number;
-  block_timestamp: string;
+  created_at: string;  // ← Changé de 'block_timestamp' à 'created_at'
   transaction_hash: string;
 }
 
@@ -37,8 +37,8 @@ export interface TriplesByCreatorResponse {
 // et avec un prédicat et un objet spécifiques
 export const fetchTriplesByCreator = async (
   creatorId: string,
-  predicateId: number = Number(PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId),
-  objectId: number = Number(PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId),
+  predicateId: string = PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId.toString(),
+  objectId: string = PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId.toString(),
   network: Network = Network.MAINNET
 ): Promise<TriplesByCreatorResponse> => {
   const url = API_URLS[network];
@@ -46,11 +46,48 @@ export const fetchTriplesByCreator = async (
   // Construire la condition where pour filtrer par creator_id, predicate_id et object_id
   const variables = { 
     where: {
-      subject: { creator_id: { _eq: creatorId } },
-      predicate_id: { _eq: predicateId },
-      object_id: { _eq: objectId }
+      subject: { 
+        creator_id: { "_eq": creatorId }
+      },
+      predicate_id: { 
+        "_eq": `0x${PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId.toString(16).padStart(64, '0')}`
+      },
+      object_id: { 
+        "_eq": `0x${PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId.toString(16).padStart(64, '0')}`
+      }
     }
   };
+
+  // Remplacer la requête GraphQL par celle qui fonctionne :
+  const query = `
+    query GetTriples($where: triples_bool_exp) {
+      triples(where: $where) {
+        term_id
+        subject_id
+        predicate_id
+        object_id
+        subject {
+          term_id
+          label
+          type
+          creator_id
+        }
+        predicate {
+          term_id
+          label
+          type
+        }
+        object {
+          term_id
+          label
+          type
+        }
+        block_number
+        created_at
+        transaction_hash
+      }
+    }
+  `;
 
   try {
     const response = await fetch(url, {
@@ -60,13 +97,15 @@ export const fetchTriplesByCreator = async (
         Accept: "application/json",
       },
       body: JSON.stringify({
-        query: GetTriplesDocument,
+        query,  // ← Utiliser la requête directe
         variables,
       }),
     });
 
     const result = await response.json();
+
     if (result.errors) {
+      console.error(`la Erreurs GraphQL:`, result.errors);
       throw new Error(result.errors[0]?.message || "Erreur GraphQL inconnue");
     }
 
@@ -83,8 +122,8 @@ export const fetchTriplesByCreator = async (
 // Hook pour récupérer les triples avec des conditions spécifiques
 export const useTripleByCreator = (
   creatorId: string,
-  predicateId: number = Number(PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId),
-  objectId: number = Number(PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId),
+  predicateId: string = PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId.toString(),
+  objectId: string = PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId.toString(),
   network: Network = Network.MAINNET
 ) => {
   const [data, setData] = useState<TriplesByCreatorResponse | null>(null);

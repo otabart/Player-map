@@ -1,37 +1,24 @@
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import dts from 'vite-plugin-dts';
-import { resolve } from 'path';
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 
 export default defineConfig({
-  plugins: [
-    react(),
-    dts({
-      include: ['src'],
-      outDir: 'dist/types'
-    })
-  ],
+  plugins: [react()],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.tsx'),
+      entry: 'src/index.tsx',
       name: 'PlayerMap',
-      fileName: (format) => `index.${format}.js`,
-      formats: ['es', 'umd']
+      fileName: (format) => `index.${format}.js`
     },
     rollupOptions: {
-      external: ['react', 'react-dom'],
+      external: ['react', 'react-dom', 'aframe', '3d-force-graph-vr'],
       output: {
-        exports: 'named',
         globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM'
+          'react': 'React',
+          'react-dom': 'ReactDOM',
+          'aframe': 'AFRAME',
+          '3d-force-graph-vr': 'ForceGraphVR'
         }
       }
     }
-  },
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, 'src')
-    }
   }
-});
+})

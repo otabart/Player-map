@@ -63,23 +63,15 @@ export const useSubmitVotes = ({
       });
 
       const votesToProcess = voteItems.filter((item) => item.units > 0);
-      let result: DepositResponse = { success: true, hash: "", error: undefined };
 
       // Process each vote individually with depositTriple
-      for (const vote of votesToProcess) {
-        const voteResult = await depositTriple(
-          vote.id,
-          vote.units,
-          vote.direction
-        );
-
-        if (!voteResult.success) {
-          result = voteResult;
-          break;
-        }
-
-        result.hash = voteResult.hash || "";
-      }
+      const votes = votesToProcess.map(vote => ({
+        claimId: `0x${vote.id.toString(16).padStart(64, '0')}`,
+        units: vote.units,
+        direction: vote.direction
+      }));
+      
+      const result = await depositTriple(votes);
 
       if (result.success) {
         setTransactionStatus({

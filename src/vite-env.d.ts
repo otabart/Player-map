@@ -9,10 +9,11 @@ interface ImportMetaEnv {
   // Ces variables NE sont PAS utilisées directement dans la bibliothèque,
   // elles peuvent servir à configurer l'application qui utilise la bibliothèque
   readonly VITE_API_URL?: string;
-  
+
   // Variables utilisées par d'autres parties de l'application
   readonly VITE_ATOM_CONTRACT_ADDRESS: string;
   readonly VITE_VALUE_PER_ATOM: string;
+  readonly VITE_VALUE_PER_TRIPLE: string;
   readonly VITE_ATOM_CONTRACT_CHAIN_ID: string;
 }
 

@@ -1,4 +1,4 @@
-import { createServerClient } from '@0xintuition/graphql';
+import { createServerClient, API_URL_DEV } from '@0xintuition/graphql';
 
 // Enum pour les différents réseaux disponibles
 export enum Network {
@@ -8,8 +8,8 @@ export enum Network {
 
 // URLs des API GraphQL
 export const API_URLS = {
-  [Network.MAINNET]: 'https://prod.base.intuition-api.com/v1/graphql',
-  [Network.TESTNET]: 'https://dev.base-sepolia.intuition-api.com/v1/graphql' // TODO: change to mainnet
+  [Network.MAINNET]: "https://testnet.intuition.sh/v1/graphql",
+  [Network.TESTNET]: API_URL_DEV // TODO: change to mainnet
 };
 
 // Fonction pour créer un client avec le réseau approprié

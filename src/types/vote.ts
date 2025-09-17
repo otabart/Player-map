@@ -19,10 +19,10 @@ export interface Claim {
 export interface VoteItem extends Claim {
   units: number;         // Number of units for this claim
   direction: VoteDirection; // Direction of vote (FOR, AGAINST, NONE)
-  vault_id?: string;     // Vault ID used for FOR votes
-  vault_position_count?: number; // Number of positions in the FOR vault
-  counter_vault_id?: string; // Counter vault ID used for AGAINST votes
-  counter_vault_position_count?: number; // Number of positions in the AGAINST vault
+  term_id?: string;     // Vault ID used for FOR votes
+  term_position_count?: number; // Number of positions in the FOR vault
+  counter_term_id?: string; // Counter vault ID used for AGAINST votes
+  counter_term_position_count?: number; // Number of positions in the AGAINST vault
   userHasPosition?: boolean; // Whether the user already has a position on this triple
   userPositionDirection?: VoteDirection; // Direction of the user's existing position
 }

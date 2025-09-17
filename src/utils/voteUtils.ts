@@ -24,7 +24,7 @@ export const calculateTotalUnits = (voteItems: VoteItem[]): number => {
  * @returns Total ETH cost as a string with 3 decimal places
  */
 export const calculateEthCost = (units: number): string => {
-  return (units * 0.00025).toFixed(5);
+  return (units * 0.01).toFixed(2);
 };
 
 /**
@@ -33,7 +33,7 @@ export const calculateEthCost = (units: number): string => {
  * @returns Estimated gas cost as a string with 4 decimal places
  */
 export const calculateGasCost = (transactionCount: number): string => {
-  return (transactionCount * 0.0000004).toFixed(7);
+  return (transactionCount * 0.00005).toFixed(5);
 };
 
 /**

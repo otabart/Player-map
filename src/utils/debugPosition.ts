@@ -28,7 +28,7 @@ export const checkTriplePosition = async (
         query: `
           query GetTripleUserPosition($tripleId: numeric!, $walletAddress: String!) {
             # Get the triple with vault information
-            triple(id: $tripleId) {
+            triple(term_id: $tripleId) {
               id
               subject {
                 label
@@ -39,11 +39,11 @@ export const checkTriplePosition = async (
               object {
                 label
               }
-              vault_id
-              counter_vault_id
+              term_id
+              counter_term_id
               
               # Get vault positions
-              vault {
+              term {
                 id
                 positions_aggregate(where: {account: {id: {_ilike: $walletAddress}}}) {
                   aggregate {
@@ -56,7 +56,7 @@ export const checkTriplePosition = async (
               }
               
               # Get counter vault positions
-              counter_vault {
+              counter_term {
                 id
                 positions_aggregate(where: {account: {id: {_ilike: $walletAddress}}}) {
                   aggregate {
@@ -98,17 +98,17 @@ export const checkTriplePosition = async (
       };
     }
 
-    const hasVaultPosition =
-      tripleInfo.vault?.positions_aggregate?.aggregate?.count > 0 ||
-      tripleInfo.vault?.positions_aggregate?.nodes?.length > 0;
+    const hasTermPosition =
+      tripleInfo.term?.positions_aggregate?.aggregate?.count > 0 ||
+      tripleInfo.term?.positions_aggregate?.nodes?.length > 0;
 
-    const hasCounterVaultPosition =
-      tripleInfo.counter_vault?.positions_aggregate?.aggregate?.count > 0 ||
-      tripleInfo.counter_vault?.positions_aggregate?.nodes?.length > 0;
+    const hasCounterTermPosition =
+      tripleInfo.counter_term?.positions_aggregate?.aggregate?.count > 0 ||
+      tripleInfo.counter_term?.positions_aggregate?.nodes?.length > 0;
 
     // Set states based on position findings
-    const foundPosition = hasVaultPosition || hasCounterVaultPosition;
-    const isFor = foundPosition ? hasVaultPosition : null;
+    const foundPosition = hasTermPosition || hasCounterTermPosition;
+    const isFor = foundPosition ? hasTermPosition : null;
 
     return {
       hasPosition: foundPosition,

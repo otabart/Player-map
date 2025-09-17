@@ -30,7 +30,7 @@ export const TransactionInfo: React.FC<TransactionInfoProps> = ({
             Unit value:
           </div>
           <div style={{ fontSize: "1.1em", fontWeight: "bold", color: "#FFD32A" }}>
-            {calculateEthCost(totalUnits)} ETH
+            {calculateEthCost(totalUnits)} tTRUST
           </div>
         </div>
         
@@ -48,7 +48,7 @@ export const TransactionInfo: React.FC<TransactionInfoProps> = ({
             Estimated gas cost:
           </div>
           <div style={{ fontSize: "1.1em", fontWeight: "bold", color: "#FFD32A" }}>
-            ~{calculateGasCost(numberOfTransactions)} ETH
+            ~{calculateGasCost(numberOfTransactions)} tTRUST
           </div>
         </div>
       </div>

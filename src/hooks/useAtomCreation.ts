@@ -1,5 +1,5 @@
 import { ATOM_CONTRACT_ADDRESS, VALUE_PER_ATOM, atomABI } from '../abi';
-import { keccak256, toHex } from 'viem';
+import { keccak256, toHex, encodePacked } from 'viem';
 import { hashDataToIPFS } from '../utils/ipfs-utils';
 import { ipfsToHttpUrl, isIpfsUrl } from '../utils/pinata';
 
@@ -50,115 +50,40 @@ export const useAtomCreation = ({ walletConnected, walletAddress, publicClient }
       // 3. Convertir le hash IPFS en hex pour le contrat
       const hexData = toHex(ipfsHash);
 
-      // 4. Vérifier si l'atome existe déjà
-      // Calculer le hash que le contrat utilisera
-      const atomHash = keccak256(hexData);
+      console.log('Contract address:', ATOM_CONTRACT_ADDRESS);
+      console.log('VALUE_PER_ATOM:', VALUE_PER_ATOM.toString());
+      console.log('Hex data:', hexData);
 
-      // Choisir le client approprié pour la lecture
-      const readClient = publicClient || walletConnected;
+      // Convertir hexData en bytes correctement
+      const dataBytes = hexData as `0x${string}`;
 
-      // Vérifier si l'atome existe déjà
-      if (readClient && typeof readClient.readContract === 'function') {
-        try {
-          // Vérifier si l'atome existe déjà en utilisant readClient
-          const existingAtomId = await readClient.readContract({
-            address: ATOM_CONTRACT_ADDRESS,
-            abi: atomABI,
-            functionName: 'atomsByHash',
-            args: [atomHash],
-          });
+      // 4. CALCULER L'ID DE L'ATOME AVANT LA TRANSACTION
+      console.log('Calculating atom ID using keccak256(encodePacked)...');
+      const atomIdHex = keccak256(encodePacked(['bytes'], [dataBytes]));
 
-          // Si l'ID n'est pas 0, l'atome existe déjà
-          if (existingAtomId && BigInt(existingAtomId) !== 0n) {
-            return {
-              atomId: BigInt(existingAtomId),
-              ipfsHash
-            };
-          }
-        } catch (error) {
-          console.error('Error checking if atom exists:', error);
-          // Continuer avec la création de l'atome si la vérification échoue
-        }
-      } else {
-        console.warn('No valid read client with readContract method available');
-      }
+      const atomId = BigInt(atomIdHex);
+      console.log('Calculated atom ID:', atomId.toString());
 
-      // Obtenir le hash de transaction
+      // 5. Créer l'atome avec createAtoms
+      console.log('Creating atom with createAtoms...');
       const txHash = await walletConnected.writeContract({
         address: ATOM_CONTRACT_ADDRESS,
         abi: atomABI,
-        functionName: 'createAtom',
-        args: [hexData],
+        functionName: 'createAtoms',
+        args: [
+          [dataBytes], // data: bytes[] - tableau avec un seul élément bytes
+          [VALUE_PER_ATOM] // assets: uint256[] - tableau avec la valeur pour un atome
+        ],
         value: VALUE_PER_ATOM,
       });
 
-      // 6. Attendre la confirmation de la transaction en utilisant une méthode compatible
-      let receipt;
-      if (walletConnected.waitForTransactionReceipt) {
-        // Nouvelle approche (Viem)
-        receipt = await walletConnected.waitForTransactionReceipt({ hash: txHash });
-      } else if (txHash.wait) {
-        // Ancienne approche (ethers.js)
-        receipt = await txHash.wait();
-      } else {
-        // Attente passive si aucune méthode n'est disponible
-        await new Promise(resolve => setTimeout(resolve, 3000));
-      }
+      console.log('Transaction hash:', txHash);
+      console.log('Atom created successfully with ID:', atomId.toString());
 
-      // 7. Récupérer l'ID de l'atome créé
-      if (readClient && typeof readClient.readContract === 'function') {
-        try {
-          const newAtomId = await readClient.readContract({
-            address: ATOM_CONTRACT_ADDRESS,
-            abi: atomABI,
-            functionName: 'atomsByHash',
-            args: [atomHash],
-          });
-
-          return {
-            atomId: BigInt(newAtomId),
-            ipfsHash
-          };
-        } catch (readError) {
-          console.error('Error reading new atom ID with readClient:', readError);
-
-          // Essayer avec publicClient si différent de readClient
-          if (publicClient && publicClient !== readClient && typeof publicClient.readContract === 'function') {
-            try {
-              const atomId = await publicClient.readContract({
-                address: ATOM_CONTRACT_ADDRESS,
-                abi: atomABI,
-                functionName: 'atomsByHash',
-                args: [atomHash],
-              });
-              return { atomId: BigInt(atomId), ipfsHash };
-            } catch (e) {
-              console.error('Failed second attempt to read atom ID:', e);
-            }
-          }
-        }
-      } else {
-        console.warn('No valid read client available to read the new atom ID');
-
-        // Si publicClient est disponible et n'a pas été essayé
-        if (publicClient && typeof publicClient.readContract === 'function') {
-          try {
-            const atomId = await publicClient.readContract({
-              address: ATOM_CONTRACT_ADDRESS,
-              abi: atomABI,
-              functionName: 'atomsByHash',
-              args: [atomHash],
-            });
-            return { atomId: BigInt(atomId), ipfsHash };
-          } catch (e) {
-            console.error('Failed fallback attempt to read atom ID with publicClient:', e);
-          }
-        }
-      }
-
-      // Si tout échoue, retourner une valeur factice
-      console.warn('Using default atom ID as a fallback');
-      return { atomId: 1n, ipfsHash };
+      return {
+        atomId,
+        ipfsHash
+      };
     } catch (error) {
       console.error('Error creating atom:', error);
       throw error;

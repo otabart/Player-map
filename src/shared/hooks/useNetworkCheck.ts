@@ -10,6 +10,7 @@ interface NetworkCheckResult {
   isCorrectNetwork: boolean;
   currentChainId: number | null;
   targetChainId: number;
+  allowedChainIds: number[];
 }
 
 interface WalletError {
@@ -17,22 +18,23 @@ interface WalletError {
   message: string;
 }
 
-// Configuration pour Base
-const BASE_CONFIG = {
-  chainId: Number(ATOM_CONTRACT_CHAIN_ID),
-  chainName: 'Base',
+// Configuration pour Intuition Testnet
+const INTUITION_TESTNET_CONFIG = {
+  chainId: 13579, // Chain ID d'Intuition testnet
+  chainName: 'Intuition Testnet',
   nativeCurrency: {
-    name: 'ETH',
-    symbol: 'ETH',
+    name: 'tTRUST',
+    symbol: 'tTRUST',
     decimals: 18,
   },
-  rpcUrls: ['https://mainnet.base.org'],
-  blockExplorerUrls: ['https://basescan.org'],
+  rpcUrls: ['https://testnet.rpc.intuition.systems'],
+  blockExplorerUrls: ['https://intuition-testnet.explorer.caldera.xyz'],
 };
 
 export const useNetworkCheck = ({ walletConnected, publicClient }: UseNetworkCheckProps): NetworkCheckResult => {
   const [currentChainId, setCurrentChainId] = useState<number | null>(null);
-  const targetChainId = Number(ATOM_CONTRACT_CHAIN_ID);
+  const allowedChainIds = [13579]; // Intuition Testnet uniquement
+  const targetChainId = Number(ATOM_CONTRACT_CHAIN_ID); // 13579 pour Intuition testnet
 
   useEffect(() => {
     const checkNetwork = async () => {
@@ -63,13 +65,13 @@ export const useNetworkCheck = ({ walletConnected, publicClient }: UseNetworkChe
       if (walletError.code === 4902) {
         try {
           console.log('Network not found, attempting to add it');
-          await walletConnected.addChain(BASE_CONFIG);
+          await walletConnected.addChain(INTUITION_TESTNET_CONFIG);
 
           console.log('Network added, attempting switch again');
           await walletConnected.switchChain({ chainId: targetChainId });
         } catch (addError) {
-          console.error('Error adding Base network:', addError);
-          throw new Error('Unable to add Base network to your wallet. Please add it manually.');
+          console.error('Error adding Intuition network:', addError);
+          throw new Error('Unable to add Intuition network to your wallet. Please add it manually.');
         }
       } else {
         throw new Error('Unable to switch network. Please check your wallet.');
@@ -78,8 +80,9 @@ export const useNetworkCheck = ({ walletConnected, publicClient }: UseNetworkChe
   };
 
   return {
-    isCorrectNetwork: currentChainId === targetChainId,
+    isCorrectNetwork: currentChainId !== null && allowedChainIds.includes(currentChainId),
     currentChainId,
-    targetChainId
+    targetChainId,
+    allowedChainIds
   };
-}; 
+};
