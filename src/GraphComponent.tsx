@@ -181,7 +181,11 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
 
         {/* Si wallet connecté et player atom trouvé, afficher le PlayerMapGraph */}
         {isWalletReady && hasPlayerAtom && (
-          <PlayerMapGraph walletAddress={walletAddress} />
+          <PlayerMapGraph 
+            walletAddress={walletAddress}
+            walletConnected={walletConnected}
+            walletHooks={walletHooks}
+          />
         )}
 
         {/* Formulaire d'inscription - géré directement par GraphComponent avec le QueryClient local */}

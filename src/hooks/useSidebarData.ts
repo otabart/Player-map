@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Network } from './useAtomData';
-import { fetchTriplesForAgent, fetchPositionsByAccount, fetchClaimsByAccount, fetchFollowsAndFollowers } from '../api/sidebarQueries';
+import { fetchTriplesForAgent, fetchPositions, fetchClaimsByAccount, fetchFollowsAndFollowers } from '../api/sidebarQueries';
 import { useTripleByCreator } from './useTripleByCreator';
 import { COMMON_PREDICATES } from '../utils/constants';
 
@@ -58,7 +58,7 @@ export const useSidebarData = (
         // Charger les données en parallèle
         const [triplesData, positionsData, claimsData, connectionsData] = await Promise.all([
           fetchTriplesForAgent(walletAddress, network),
-          fetchPositionsByAccount(walletAddress, network),
+          fetchPositions(walletAddress, network),
           fetchClaimsByAccount(walletAddress, network), // Ajouter les claims
           fetchFollowsAndFollowers(COMMON_PREDICATES.FOLLOWS, walletAddress, network) // Ajouter les connections
         ]);

@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Network, API_URLS } from "./useAtomData";
 import { PLAYER_TRIPLE_TYPES } from "../utils/constants";
-import { GetTriplesDocument, fetcher } from '@0xintuition/graphql';
 
 export interface Triple {
   term_id: string;  // ← Changé de 'id' à 'term_id'
@@ -13,6 +12,20 @@ export interface Triple {
     label: string;
     type: string;
     creator_id: string;
+    value?: {
+      person?: {
+        description: string;
+      };
+      organization?: {
+        description: string;
+      };
+      thing?: {
+        description: string;
+      };
+      book?: {
+        description: string;
+      };
+    };
   };
   predicate: {
     term_id: string;  // ← Changé de 'id' à 'term_id'
@@ -71,6 +84,20 @@ export const fetchTriplesByCreator = async (
           label
           type
           creator_id
+          value {
+            person {
+              description
+            }
+            organization {
+              description
+            }
+            thing {
+              description
+            }
+            book {
+              description
+            }
+          }
         }
         predicate {
           term_id

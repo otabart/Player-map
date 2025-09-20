@@ -148,7 +148,7 @@ export const useDepositTriple = ({
     
         // Add to arrays
         termIds.push(targetId as `0x${string}`);
-        curveIds.push(2n);
+        curveIds.push(1n);
         assets.push(depositValue);
         minShares.push(0n);
       }

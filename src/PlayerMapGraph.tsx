@@ -3,13 +3,15 @@ import {
   GraphVisualization,
   LoadingAnimation,
 } from "playermap_graph";
-import { SidebarDrawer, ActivityCard } from "./components/graph";
+import { SidebarDrawer, AtomDetailsSection, ClaimsSection, PositionsSection, ActivitySection } from "./components/graph";
 import { FaUser } from "react-icons/fa";
 import { useSidebarData } from "./hooks/useSidebarData";
 import { Network } from "./hooks/useAtomData";
 
 interface PlayerMapGraphProps {
   walletAddress?: string;
+  walletConnected?: any;
+  walletHooks?: any;
 }
 
 // Définir les types pour les props des composants
@@ -22,7 +24,7 @@ interface GraphVisualizationProps {
 
 interface LoadingAnimationProps {}
 
-const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress }) => {
+const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletConnected, walletHooks }) => {
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [selectedEndpoint, setSelectedEndpoint] = useState("base"); // TODO: change to mainnet
   const [isLoading, setIsLoading] = useState(false);
@@ -160,55 +162,21 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress }) => {
         
         {!sidebarLoading && !sidebarError && (
           <>            
-            {atomDetails && (
-              <>
-                <p><strong>{atomDetails.label || "Not defined"}</strong></p>
-                
-                {/* Section Connections - Données réelles */}
-                <div style={{ marginBottom: '10px' }}>
-                  <p>Following: {connections.followers.length} - Followers: {connections.follows.length}</p>
-                </div>
-                
-                <p><strong>ID :</strong> {atomDetails.description || "query a travailler"}</p>
-                <p><strong>Wallet :</strong> {walletAddress || "Not connected"}</p>
-              </>
-            )}
+            <AtomDetailsSection 
+              atomDetails={atomDetails}
+              connections={connections}
+              walletAddress={walletAddress}
+            />
             
-            {/* Section Claims - Données réelles */}
-            <div style={{ marginTop: '20px' }}>
-              <h3>My Claims ({activities.length})</h3>
-              {activities.length > 0 ? (
-                <ul style={{ fontSize: '14px', maxHeight: '200px', overflowY: 'auto' }}>
-                  {activities.slice(0, 5).map((claim, index) => (
-                    <li key={claim.term_id} style={{ marginBottom: '8px' }}>
-                      {claim.predicate.label} → {claim.object.label}
-                    </li>
-                  ))}
-                  {activities.length > 5 && <li>... and {activities.length - 5} others</li>}
-                </ul>
-              ) : (
-                <p>No claim found</p>
-              )}
-            </div>
+            <ClaimsSection activities={activities} />
             
-            {/* Section Activity - Données réelles avec ActivityCard */}
-            <div style={{ marginTop: '20px' }}>
-              <h3>My Activity ({positions.length})</h3>
-              {positions.length > 0 ? (
-                <div style={{ fontSize: '14px', maxHeight: '200px', overflowY: 'auto' }}>
-                  {positions.slice(0, 5).map((position, index) => (
-                    <ActivityCard key={position.id || index} position={position} />
-                  ))}
-                  {positions.length > 5 && (
-                    <p style={{ color: "#fff", fontSize: '12px', textAlign: 'center', marginTop: '10px' }}>
-                      ... and {positions.length - 5} other activities
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <p>No activity found</p>
-              )}
-            </div>
+            <PositionsSection 
+              accountId={walletAddress || ""} 
+              walletConnected={walletConnected}
+              walletAddress={walletAddress}
+            />
+            
+            <ActivitySection accountId={walletAddress || ""} />
           </>
         )}
       </SidebarDrawer>
