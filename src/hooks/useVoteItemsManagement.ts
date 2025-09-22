@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { VoteItem, VoteDirection } from "../types/vote";
-import { PREDEFINED_CLAIM_IDS } from "../utils/voteConstants";
+import { DefaultPlayerMapConstants } from "../types/PlayerMapConfig";
 import { Network } from "./useAtomData";
 import { useFetchTripleDetails, TripleDetails } from "./useFetchTripleDetails";
 import { useDisplayTriplesWithPosition } from "./useDisplayTriplesWithPosition";
@@ -9,15 +9,20 @@ interface UseVoteItemsManagementProps {
   network?: Network;
   walletAddress?: string;
   onError?: (message: string) => void;
+  constants: DefaultPlayerMapConstants; // Constantes injectées
 }
 
 export const useVoteItemsManagement = ({
   network = Network.MAINNET,
   walletAddress = "",
-  onError
+  onError,
+  constants
 }: UseVoteItemsManagementProps) => {
   const [voteItems, setVoteItems] = useState<VoteItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Utiliser les constantes passées en paramètre
+  const { PREDEFINED_CLAIM_IDS } = constants;
   const [totalUnits, setTotalUnits] = useState(0);
   const [userPositions, setUserPositions] = useState<Record<string, VoteDirection>>({});
 

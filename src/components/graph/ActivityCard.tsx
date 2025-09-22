@@ -179,10 +179,10 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
     >
       <div style={{ display: "flex", alignItems: "center" }}>
         <div>
-          {/* Activity avec bulles discrètes - sur une ligne */}
+          {/* Position avec bulles discrètes - sur une ligne */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <span style={{ color: "#ffd32a", fontWeight: 700, minWidth: 110 }}>
-              Activity:
+              Position:
             </span>
             {(() => {
               const activityComponents = getActivityComponents();
@@ -203,27 +203,23 @@ const ActivityCard: React.FC<ActivityCardProps> = ({ activity }) => {
                   />
                 );
               } else {
-                return <span style={{ color: '#fff', fontSize: '13px' }}>Unknown Activity</span>;
+                return <span style={{ color: '#fff', fontSize: '13px' }}>Unknown Position</span>;
               }
             })()}
           </div>
 
-          {/* Position avec bulle For/Against - sur une ligne */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <span style={{ color: "#ffd32a", fontWeight: 700, minWidth: 110 }}>
-              Position:
-            </span>
-            <PositionBubble isFor={isFor} fontSize="12px" />
-          </div>
-
-          {/* Action avec texte simple - sur une ligne */}
+          {/* Action fusionnée avec Position - sur une ligne */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <span style={{ color: "#ffd32a", fontWeight: 700, minWidth: 110 }}>
               Action:
             </span>
-            <span style={{ color: '#fff', fontSize: '13px' }}>
-              {getActionType()} {getVaultType()}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ color: '#fff', fontSize: '13px' }}>
+                {getActionType()} {getVaultType()}
+              </span>
+              <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>-</span>
+              <PositionBubble isFor={isFor} fontSize="12px" />
+            </div>
           </div>
         </div>
       </div>

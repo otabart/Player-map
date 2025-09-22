@@ -15,3 +15,4 @@ export { default as RedeemAllButton } from './RedeemAllButton';
 export { default as TripleBubble } from './TripleBubble';
 export { default as AtomBubble } from './AtomBubble';
 export { default as PositionBubble } from './PositionBubble';
+export { default as TruncatedText } from './TruncatedText';

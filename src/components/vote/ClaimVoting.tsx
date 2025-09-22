@@ -9,7 +9,7 @@ import { SubmitButton } from "./SubmitButton";
 import { TransactionStatusDisplay } from "./TransactionStatus";
 import { ConnectWalletModal, CreatePlayerModal } from "../modals";
 import { useTripleByCreator } from "../../hooks/useTripleByCreator";
-import { PLAYER_TRIPLE_TYPES } from "../../utils/constants";
+import { DefaultPlayerMapConstants } from "../../types/PlayerMapConfig";
 import RegistrationForm from "../../RegistrationForm";
 import { useNetworkCheck } from '../../shared/hooks/useNetworkCheck';
 import { NetworkSwitchMessage } from '../../shared/components/NetworkSwitchMessage';
@@ -24,6 +24,7 @@ interface ClaimVotingProps {
   onCreatePlayer?: () => void;
   wagmiConfig?: any;
   walletHooks?: any;
+  constants: DefaultPlayerMapConstants; // Constantes injectées directement
 }
 
 export const ClaimVoting: React.FC<ClaimVotingProps> = ({
@@ -36,6 +37,7 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
   onCreatePlayer,
   wagmiConfig,
   walletHooks,
+  constants,
 }) => {
   // État pour gérer l'ouverture du formulaire d'inscription
   const [isRegistrationFormOpen, setIsRegistrationFormOpen] = useState(false);
@@ -45,15 +47,19 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
   // Vérifier si le wallet est connecté
   const [isWalletReady, setIsWalletReady] = useState(false);
   
+  // Utiliser les constantes passées en paramètre
+  const { PLAYER_TRIPLE_TYPES } = constants;
+  
   // Vérifier si l'utilisateur a un Player atom sur le jeu
   const {
     loading: tripleLoading,
     triples: playerTriples,
   } = useTripleByCreator(
     walletAddress || "", 
-    PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId.toString(), 
-    PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId.toString(), 
-    network
+    PLAYER_TRIPLE_TYPES.PLAYER_GAME.predicateId,
+    PLAYER_TRIPLE_TYPES.PLAYER_GAME.objectId, 
+    network,
+    constants // Passer les constantes personnalisées !
   );
   
   // Vérifie si l'utilisateur a un player atom
@@ -91,7 +97,8 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
         status: "error",
         message
       });
-    }
+    },
+    constants // Passer les constantes personnalisées !
   });
 
   // Use hook for submitting votes
@@ -235,6 +242,7 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
         isVoteDirectionAllowed={isVoteDirectionAllowed}
         walletAddress={walletAddress}
         network={network}
+        constants={constants} // Passer les constantes personnalisées !
       />
       <SubmitButton
         onSubmit={handleSubmit}

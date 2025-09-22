@@ -1,4 +1,5 @@
 import React from 'react';
+import TruncatedText from './TruncatedText';
 
 interface TripleBubbleProps {
   subject: string;
@@ -6,6 +7,7 @@ interface TripleBubbleProps {
   object: string;
   fontSize?: string;
   showArrows?: boolean;
+  maxLength?: number;
 }
 
 const TripleBubble: React.FC<TripleBubbleProps> = ({ 
@@ -13,7 +15,7 @@ const TripleBubble: React.FC<TripleBubbleProps> = ({
   predicate, 
   object, 
   fontSize = '13px',
-  showArrows = true 
+  showArrows = true,
 }) => {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -37,7 +39,7 @@ const TripleBubble: React.FC<TripleBubbleProps> = ({
               borderRadius: '50%', 
               backgroundColor: '#FF9500'
             }} />
-            {subject}
+            <TruncatedText text={subject} maxLength={10} />
           </div>
           
           {showArrows && (
@@ -64,7 +66,7 @@ const TripleBubble: React.FC<TripleBubbleProps> = ({
           borderRadius: '50%', 
           backgroundColor: '#006FE8'
         }} />
-        {predicate}
+        <TruncatedText text={predicate} maxLength={8} />
       </div>
       
       {showArrows && (
@@ -89,7 +91,7 @@ const TripleBubble: React.FC<TripleBubbleProps> = ({
           borderRadius: '50%', 
           backgroundColor: '#4CAF50'
         }} />
-        {object}
+        <TruncatedText text={object} maxLength={12} />
       </div>
     </div>
   );

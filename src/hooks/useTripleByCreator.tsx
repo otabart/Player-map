@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Network, API_URLS } from "./useAtomData";
-import { PLAYER_TRIPLE_TYPES } from "../utils/constants";
+import { DefaultPlayerMapConstants } from "../types/PlayerMapConfig";
 
 export interface Triple {
   term_id: string;  // ← Changé de 'id' à 'term_id'
@@ -50,8 +50,8 @@ export interface TriplesByCreatorResponse {
 // et avec un prédicat et un objet spécifiques
 export const fetchTriplesByCreator = async (
   creatorId: string,
-  predicateId: string = PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId.toString(),
-  objectId: string = PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId.toString(),
+  predicateId: string,
+  objectId: string,
   network: Network = Network.MAINNET
 ): Promise<TriplesByCreatorResponse> => {
   const url = API_URLS[network];
@@ -63,10 +63,10 @@ export const fetchTriplesByCreator = async (
         creator_id: { "_eq": creatorId }
       },
       predicate_id: { 
-        "_eq": `0x${PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId.toString(16).padStart(64, '0')}`
+        "_eq": predicateId
       },
       object_id: { 
-        "_eq": `0x${PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId.toString(16).padStart(64, '0')}`
+        "_eq": objectId
       }
     }
   };
@@ -149,10 +149,17 @@ export const fetchTriplesByCreator = async (
 // Hook pour récupérer les triples avec des conditions spécifiques
 export const useTripleByCreator = (
   creatorId: string,
-  predicateId: string = PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId.toString(),
-  objectId: string = PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId.toString(),
-  network: Network = Network.MAINNET
+  predicateId?: string,
+  objectId?: string,
+  network: Network = Network.MAINNET,
+  constants?: DefaultPlayerMapConstants // Constantes optionnelles
 ) => {
+  // Utiliser les constantes passées en paramètre ou les valeurs par défaut
+  const { PLAYER_TRIPLE_TYPES } = constants || { PLAYER_TRIPLE_TYPES: { PLAYER_GAME: { predicateId: "", objectId: "" } } };
+  
+  // Utiliser les valeurs par défaut si non fournies
+  const finalPredicateId = predicateId || PLAYER_TRIPLE_TYPES.PLAYER_GAME.predicateId;
+  const finalObjectId = objectId || PLAYER_TRIPLE_TYPES.PLAYER_GAME.objectId;
   const [data, setData] = useState<TriplesByCreatorResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
@@ -167,8 +174,8 @@ export const useTripleByCreator = (
       try {
         const response = await fetchTriplesByCreator(
           creatorId,
-          predicateId,
-          objectId,
+          finalPredicateId,
+          finalObjectId,
           network
         );
         setData(response);

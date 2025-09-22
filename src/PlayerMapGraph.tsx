@@ -4,14 +4,17 @@ import {
   LoadingAnimation,
 } from "playermap_graph";
 import { SidebarDrawer, AtomDetailsSection, ClaimsSection, PositionsSection, ActivitySection } from "./components/graph";
-import { FaUser } from "react-icons/fa";
+import { FaUser, FaVoteYea } from "react-icons/fa";
 import { useSidebarData } from "./hooks/useSidebarData";
 import { Network } from "./hooks/useAtomData";
+import { DefaultPlayerMapConstants } from "./types/PlayerMapConfig";
 
 interface PlayerMapGraphProps {
   walletAddress?: string;
   walletConnected?: any;
   walletHooks?: any;
+  onOpenVoting?: () => void; // Callback pour ouvrir la modal depuis GraphComponent
+  constants: DefaultPlayerMapConstants; // Constantes injectées directement
 }
 
 // Définir les types pour les props des composants
@@ -24,15 +27,24 @@ interface GraphVisualizationProps {
 
 interface LoadingAnimationProps {}
 
-const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletConnected, walletHooks }) => {
+const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletConnected, walletHooks, onOpenVoting, constants }) => {
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [selectedEndpoint, setSelectedEndpoint] = useState("base"); // TODO: change to mainnet
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [hovered, setHovered] = useState("");
+  
+  // Handler pour le vote avec fallback sécurisé
+  const handleVoteClick = () => {
+    if (onOpenVoting) {
+      onOpenVoting();
+    } else {
+      console.warn('onOpenVoting not provided to PlayerMapGraph');
+    }
+  };
 
   // Charger les données de la sidebar
-  const { atomDetails, triples, positions, activities, connections, loading: sidebarLoading, error: sidebarError } = useSidebarData(walletAddress, Network.MAINNET);
+  const { atomDetails, triples, positions, activities, connections, loading: sidebarLoading, error: sidebarError } = useSidebarData(walletAddress, Network.MAINNET, constants);
 
   // Styles identiques à NavigationBar.jsx
   const navBtnStyle = {
@@ -109,7 +121,7 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
         </div>
       )}
 
-      {/* Bouton "My View" identique à NavigationBar.jsx */}
+      {/* Bouton "My View" en haut à gauche */}
       <div
         style={{
           position: "absolute",
@@ -130,6 +142,36 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
           onMouseLeave={() => setHovered("")}
         >
           <FaUser />
+        </button>
+      </div>
+
+      {/* Bouton "Vote" en bas à gauche */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "18px",
+          left: "18px",
+          zIndex: 50,
+        }}
+      >
+        <button
+          style={{
+            ...getBtnStyle("vote"),
+            fontSize: "18px",
+            fontWeight: "bolder",
+            width: "auto",
+            minWidth: "160px",
+            padding: "0 12px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+          }}
+          onClick={handleVoteClick}
+          aria-label="Vote"
+          onMouseEnter={() => setHovered("vote")}
+          onMouseLeave={() => setHovered("")}
+        >
+          GIVE A FEEDBACK <FaVoteYea />
         </button>
       </div>
 
@@ -180,6 +222,7 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
           </>
         )}
       </SidebarDrawer>
+
     </div>
   );
 };

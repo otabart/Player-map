@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Network } from './useAtomData';
 import { fetchTriplesForAgent, fetchPositions, fetchClaimsByAccount, fetchFollowsAndFollowers } from '../api/sidebarQueries';
 import { useTripleByCreator } from './useTripleByCreator';
-import { COMMON_PREDICATES } from '../utils/constants';
+import { DefaultPlayerMapConstants } from '../types/PlayerMapConfig';
 
 interface SidebarData {
   atomDetails: any | null;
@@ -19,7 +19,8 @@ interface SidebarData {
 
 export const useSidebarData = (
   walletAddress: string | undefined,
-  network: Network = Network.MAINNET
+  network: Network = Network.MAINNET,
+  constants: DefaultPlayerMapConstants
 ): SidebarData => {
   const [triples, setTriples] = useState<any[]>([]);
   const [positions, setPositions] = useState<any[]>([]);
@@ -30,12 +31,15 @@ export const useSidebarData = (
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Utiliser les constantes passées en paramètre
+  const { COMMON_IDS } = constants;
 
   // Utiliser useTripleByCreator pour récupérer les triples du joueur
   const { triples: playerTriples, loading: triplesLoading, error: triplesError } = useTripleByCreator(
     walletAddress || '',
-    undefined, // Utiliser les valeurs par défaut
-    undefined,
+    constants.PLAYER_TRIPLE_TYPES.PLAYER_GAME.predicateId,
+    constants.PLAYER_TRIPLE_TYPES.PLAYER_GAME.objectId,
     network
   );
 
@@ -60,7 +64,7 @@ export const useSidebarData = (
           fetchTriplesForAgent(walletAddress, network),
           fetchPositions(walletAddress, network),
           fetchClaimsByAccount(walletAddress, network), // Ajouter les claims
-          fetchFollowsAndFollowers(COMMON_PREDICATES.FOLLOWS, walletAddress, network) // Ajouter les connections
+          fetchFollowsAndFollowers(COMMON_IDS.FOLLOWS, walletAddress, network) // Ajouter les connections
         ]);
 
         setTriples(triplesData);

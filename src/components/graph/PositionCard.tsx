@@ -125,7 +125,7 @@ const PositionCard: React.FC<PositionCardProps> = ({ position, isSelected = fals
         background: "#232326",
         borderRadius: 14,
         padding: "18px 24px",
-        marginBottom: 18,
+        marginBottom: 4,
         boxShadow: "0 2px 12px rgba(0,0,0,0.13)",
         borderLeft: `6px solid ${isRedeem ? "#FFD700" : isFor ? "#006FE8" : "#FF9500"}`,
         position: "relative",
@@ -135,14 +135,11 @@ const PositionCard: React.FC<PositionCardProps> = ({ position, isSelected = fals
       }}
       className="position-card"
     >
-      <div style={{ display: "flex", alignItems: "flex-start", marginBottom: 10 }}>
+      <div style={{ display: "flex", alignItems: "flex-start" }}>
         <AtomImage src={position.account?.image} alt={position.account?.label} />
         <div style={{ flex: 1 }}>
           {/* Position avec bulles discrètes - sur une ligne */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <span style={{ color: "#ffd429", fontWeight: 700, minWidth: 110 }}>
-              Position:
-            </span>
             {(() => {
               const positionComponents = getPositionComponents();
               if (positionComponents.type === 'triple') {
@@ -151,32 +148,28 @@ const PositionCard: React.FC<PositionCardProps> = ({ position, isSelected = fals
                     subject={positionComponents.subject}
                     predicate={positionComponents.predicate}
                     object={positionComponents.object}
-                    fontSize="13px"
+                    fontSize="14px"
                   />
                 );
               } else if (positionComponents.type === 'atom') {
                 return (
                   <AtomBubble
                     label={positionComponents.label}
-                    fontSize="13px"
+                    fontSize="14px"
                   />
                 );
               } else {
-                return <span style={{ color: '#fff', fontSize: '13px' }}>Unknown Position</span>;
+                return <span style={{ color: '#fff', fontSize: '14px' }}>Unknown Position</span>;
               }
             })()}
           </div>
 
-          {/* Action avec bulle For/Against - sur une ligne */}
+          {/* Direction avec bulle For/Against - sur une ligne */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
             <span style={{ color: "#ffd429", fontWeight: 700, minWidth: 110 }}>
-              Action:
+              Direction:
             </span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ color: '#fff' }}>{getActionType()} {getVaultType()}</span>
-              <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>-</span>
-              <PositionBubble isFor={isFor} fontSize="12px" />
-            </div>
+            <PositionBubble isFor={isFor} fontSize="12px" />
           </div>
 
           <InfoRow label="Shares" value={sharesTTRUST} />

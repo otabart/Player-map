@@ -1,11 +1,13 @@
 import React from 'react';
+import TruncatedText from './TruncatedText';
 
 interface AtomBubbleProps {
   label: string;
   fontSize?: string;
+  maxLength?: number;
 }
 
-const AtomBubble: React.FC<AtomBubbleProps> = ({ label, fontSize = '13px' }) => {
+const AtomBubble: React.FC<AtomBubbleProps> = ({ label, fontSize = '13px', maxLength = 15 }) => {
   return (
     <div style={{
       padding: '4px 8px',
@@ -24,7 +26,7 @@ const AtomBubble: React.FC<AtomBubbleProps> = ({ label, fontSize = '13px' }) => 
         borderRadius: '50%', 
         backgroundColor: '#9C27B0'
       }} />
-      {label}
+      <TruncatedText text={label} maxLength={maxLength} />
     </div>
   );
 };

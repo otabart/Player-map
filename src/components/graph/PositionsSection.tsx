@@ -100,14 +100,16 @@ const PositionsSection: React.FC<PositionsSectionProps> = ({ accountId, walletCo
               const currentPositions = positions.slice(startIndex, endIndex);
               
               return currentPositions.map((position, index) => (
-                <PositionCard 
-                  key={position.id || index} 
-                  position={position}
-                  isSelected={selectedPositions.has(position.id)}
-                  onSelect={handlePositionSelect}
-                  onAmountChange={handleAmountChange}
-                  redeemAmount={redeemAmounts[position.id]}
-                />
+                <div style={{ padding: '8px 24px 8px' }} key={position.id || index}>
+                  <PositionCard 
+                    key={position.id || index} 
+                    position={position}
+                    isSelected={selectedPositions.has(position.id)}
+                    onSelect={handlePositionSelect}
+                    onAmountChange={handleAmountChange}
+                    redeemAmount={redeemAmounts[position.id]}
+                  />
+                </div>
               ));
             })()}
           
