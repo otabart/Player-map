@@ -198,6 +198,7 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
             walletHooks={walletHooks}
             onOpenVoting={() => setIsVotingOpen(true)}
             constants={constants} // Passer les constantes directement
+            gamesId={constants.COMMON_IDS.GAMES_ID} // Passer GAMES_ID à playermap-graph
           />
         )}
 

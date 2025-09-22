@@ -15,6 +15,7 @@ interface PlayerMapGraphProps {
   walletHooks?: any;
   onOpenVoting?: () => void; // Callback pour ouvrir la modal depuis GraphComponent
   constants: DefaultPlayerMapConstants; // Constantes injectées directement
+  gamesId?: string; // GAMES_ID pour playermap-graph
 }
 
 // Définir les types pour les props des composants
@@ -27,7 +28,7 @@ interface GraphVisualizationProps {
 
 interface LoadingAnimationProps {}
 
-const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletConnected, walletHooks, onOpenVoting, constants }) => {
+const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletConnected, walletHooks, onOpenVoting, constants, gamesId }) => {
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [selectedEndpoint, setSelectedEndpoint] = useState("base"); // TODO: change to mainnet
   const [isLoading, setIsLoading] = useState(false);
@@ -103,6 +104,7 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
           onNodeSelect={setSelectedNode}
           onLoadingChange={setIsLoading}
           walletAddress={walletAddress}
+          gamesId={gamesId}
         />
       </div>
 
