@@ -1,5 +1,5 @@
 import React from "react";
-import { OFFICIAL_GUILDS } from './utils/constants';
+import { DefaultPlayerMapConstants } from './types/PlayerMapConfig';
 
 interface PlayerCreationProgressProps {
   step: number;
@@ -23,6 +23,7 @@ interface PlayerCreationProgressProps {
   isLoading: boolean;
   isUploading: boolean;
   fileInputRef: React.RefObject<HTMLInputElement>;
+  constants: DefaultPlayerMapConstants; // Constantes injectées
 }
 
 const PreviewImage = ({ src }: { src: string }) => {
@@ -89,8 +90,11 @@ const PlayerCreationProgress: React.FC<PlayerCreationProgressProps> = ({
   handleSubmit,
   isLoading,
   isUploading,
-  fileInputRef
+  fileInputRef,
+  constants
 }) => {
+  // Utiliser les constantes passées en paramètre
+  const { OFFICIAL_GUILDS } = constants;
   return (
     <>
       {/* Progression du processus */}

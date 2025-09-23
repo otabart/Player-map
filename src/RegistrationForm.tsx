@@ -12,6 +12,7 @@ import PlayerCreationProgress from "./PlayerCreationProgress";
 import { usePlayerCreationService } from "./services/playerCreationService";
 import { useNetworkCheck } from "./shared/hooks/useNetworkCheck";
 import { NetworkSwitchMessage } from "./shared/components/NetworkSwitchMessage";
+import { DefaultPlayerMapConstants } from "./types/PlayerMapConfig";
 
 interface RegistrationFormProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ interface RegistrationFormProps {
     useWalletClient?: any;
     usePublicClient?: any;
   };
+  constants: DefaultPlayerMapConstants; // Constantes injectées
 }
 
 // Utility function to correctly encode in bytes
@@ -45,6 +47,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   walletAddress,
   wagmiConfig,
   walletHooks,
+  constants,
 }) => {
   const [formData, setFormData] = useState({
     pseudo: "",
@@ -70,7 +73,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const { createPlayer } = usePlayerCreationService(
     walletConnected, 
     walletAddress || '',
-    publicClient
+    publicClient,
+    constants // Passer les constantes personnalisées !
   );
 
   const { isCorrectNetwork, currentChainId, targetChainId, allowedChainIds } = useNetworkCheck({
@@ -325,6 +329,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
             isLoading={isLoading}
             isUploading={isUploading}
             fileInputRef={fileInputRef}
+            constants={constants} // Passer les constantes personnalisées !
           />
         )}
       </div>

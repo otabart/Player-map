@@ -1,5 +1,5 @@
 import { VoteDirection, DepositResponse } from "../types/vote";
-import { UNIT_VALUE } from "../utils/voteConstants";
+import { UNIT_VALUE } from "../utils/constants";
 import { ATOM_CONTRACT_ADDRESS, atomABI } from "../abi";
 import { useState } from "react";
 import { Network, API_URLS } from "./useAtomData";
@@ -18,7 +18,7 @@ export const useDepositTriple = ({
   network = Network.MAINNET,
 }: UseDepositTripleProps) => {
   const [isLoading, setIsLoading] = useState(false);
-
+  
   // Helper function to fetch triple details via GraphQL
   const fetchTripleDetails = async (tripleId: string) => {
     try {
@@ -82,14 +82,14 @@ export const useDepositTriple = ({
         error: "Wallet not connected",
       };
     }
-    
+
     if (votes.length === 0) {
       return {
         success: false,
         error: "No votes provided",
       };
     }
-    
+
     // Validate each vote
     for (const vote of votes) {
       if (vote.units <= 0) {
@@ -108,7 +108,7 @@ export const useDepositTriple = ({
       const curveIds: bigint[] = [];
       const assets: bigint[] = [];
       const minShares: bigint[] = [];
-      
+
       // Traiter chaque vote
       for (const vote of votes) {
         // Get triple details
@@ -120,7 +120,7 @@ export const useDepositTriple = ({
             error: `Failed to fetch triple details for claim ${vote.claimId}`,
           };
         }
-    
+
         // Determine which ID to use based on vote direction
         let targetId: string;
         if (vote.direction === VoteDirection.For) {
@@ -136,23 +136,23 @@ export const useDepositTriple = ({
           }
           targetId = tripleDetails.counter_term_id;
         }
-    
+
         // Validate targetId
         if (!targetId) {
           console.error("❌ targetId is undefined");
           return { success: false, error: "targetId not found" };
         }
-    
+
         // Calculate value in wei
         const depositValue = UNIT_VALUE * BigInt(vote.units);
-    
+
         // Add to arrays
         termIds.push(targetId as `0x${string}`);
-        curveIds.push(2n);
+        curveIds.push(1n);
         assets.push(depositValue);
         minShares.push(0n);
       }
-    
+
       // Call depositBatch function
       const txHash = await walletConnected.writeContract({
         address: ATOM_CONTRACT_ADDRESS,

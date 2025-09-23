@@ -1,5 +1,5 @@
 import { ATOM_CONTRACT_ADDRESS, VALUE_PER_TRIPLE, atomABI } from "../abi";
-import { PLAYER_TRIPLE_TYPES } from "../utils/constants";
+import { DefaultPlayerMapConstants } from "../types/PlayerMapConfig";
 
 // Structure pour les triples à créer
 export interface TripleToCreate {
@@ -12,9 +12,12 @@ interface UseBatchCreateTripleProps {
   walletConnected?: any;
   walletAddress?: string;
   publicClient?: any;
+  constants: DefaultPlayerMapConstants; // Constantes injectées
 }
 
-export const useBatchCreateTriple = ({ walletConnected, walletAddress, publicClient }: UseBatchCreateTripleProps) => {
+export const useBatchCreateTriple = ({ walletConnected, walletAddress, publicClient, constants }: UseBatchCreateTripleProps) => {
+  // Utiliser les constantes passées en paramètre
+  const { PLAYER_TRIPLE_TYPES } = constants;
   // Fonction pour vérifier si un triple existe déjà
   const checkTripleExists = async (
     subjectId: bigint,
@@ -86,6 +89,7 @@ export const useBatchCreateTriple = ({ walletConnected, walletAddress, publicCli
         functionName: "createTriples", // Changé de "batchCreateTriple" à "createTriples"
         args: [subjectIds, predicateIds, objectIds, assets], // Ajouté le paramètre assets
         value: VALUE_PER_TRIPLE * BigInt(triples.length), // Valeur pour chaque triple
+        gas: 5000000n
       });
 
       // Attendre la confirmation en utilisant une méthode compatible
@@ -113,30 +117,14 @@ export const useBatchCreateTriple = ({ walletConnected, walletAddress, publicCli
 
   // Fonction spécifique pour créer les triples de joueur
   const createPlayerTriples = async (playerAtomId: bigint): Promise<any> => {
-
-    // Création des triples spécifiques pour le joueur
-    const triplesToCreate: TripleToCreate[] = [
-      {
+    // Création dynamique des triples basée sur PLAYER_TRIPLE_TYPES
+    const triplesToCreate: TripleToCreate[] = Object.entries(PLAYER_TRIPLE_TYPES)
+      .filter(([key, value]) => 'objectId' in value && value.objectId !== null) // Exclure les triples avec objectId null (comme PLAYER_GUILD)
+      .map(([key, value]) => ({
         subjectId: playerAtomId,
-        predicateId: PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId,
-        objectId: PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId,
-      },
-      {
-        subjectId: playerAtomId,
-        predicateId: PLAYER_TRIPLE_TYPES.IS_FAIRPLAY.predicateId,
-        objectId: PLAYER_TRIPLE_TYPES.IS_FAIRPLAY.objectId,
-      },
-      {
-        subjectId: playerAtomId,
-        predicateId: PLAYER_TRIPLE_TYPES.IS_STRONG_BOSS.predicateId,
-        objectId: PLAYER_TRIPLE_TYPES.IS_STRONG_BOSS.objectId,
-      },
-      {
-        subjectId: playerAtomId,
-        predicateId: PLAYER_TRIPLE_TYPES.IS_STRONG_FIGHTER.predicateId,
-        objectId: PLAYER_TRIPLE_TYPES.IS_STRONG_FIGHTER.objectId,
-      }
-    ];
+        predicateId: BigInt(value.predicateId),
+        objectId: BigInt((value as any).objectId),
+      }));
 
     return batchCreateTriple(triplesToCreate);
   };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { VoteItem, VoteDirection } from "../../types/vote";
-import { UNIT_VALUE } from "../../utils/voteConstants";
+import { DefaultPlayerMapConstants } from "../../types/PlayerMapConfig";
 import { useCheckSpecificTriplePosition } from "../../hooks/useCheckSpecificTriplePosition";
 import { Network } from "../../hooks/useAtomData";
 
@@ -10,14 +10,18 @@ interface ClaimItemProps {
   isVoteDirectionAllowed?: (tripleId: bigint, direction: VoteDirection) => boolean;
   walletAddress?: string;
   network?: Network;
+  constants: DefaultPlayerMapConstants; // Constantes injectées
 }
 export const ClaimItem: React.FC<ClaimItemProps> = ({
   voteItem,
   onChangeUnits,
   isVoteDirectionAllowed = () => true,
   walletAddress = "",
-  network = Network.MAINNET
+  network = Network.MAINNET,
+  constants
 }) => {
+  // Utiliser les constantes passées en paramètre
+  const { UNIT_VALUE } = constants;
   const { 
     id, 
     subject, 

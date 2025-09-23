@@ -1,15 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   GraphVisualization,
   LoadingAnimation,
 } from "playermap_graph";
-import { SidebarDrawer, ActivityCard } from "./components/graph";
-import { FaUser } from "react-icons/fa";
+import { SidebarDrawer, AtomDetailsSection, ClaimsSection, PositionsSection, ActivitySection } from "./components/graph";
+import { FaUser, FaVoteYea } from "react-icons/fa";
 import { useSidebarData } from "./hooks/useSidebarData";
 import { Network } from "./hooks/useAtomData";
+import { DefaultPlayerMapConstants } from "./types/PlayerMapConfig";
 
 interface PlayerMapGraphProps {
   walletAddress?: string;
+  walletConnected?: any;
+  walletHooks?: any;
+  onOpenVoting?: () => void; // Callback pour ouvrir la modal depuis GraphComponent
+  constants: DefaultPlayerMapConstants; // Constantes injectées directement
+  gamesId?: string; // GAMES_ID pour playermap-graph
 }
 
 // Définir les types pour les props des composants
@@ -22,15 +28,47 @@ interface GraphVisualizationProps {
 
 interface LoadingAnimationProps {}
 
-const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress }) => {
+const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletConnected, walletHooks, onOpenVoting, constants, gamesId }) => {
   const [selectedNode, setSelectedNode] = useState<any>(null);
+  const [isMyNode, setIsMyNode] = useState(false); // Nouvel état pour différencier mon atom vs autre
+  
+  // Wrapper pour setSelectedNode
+  const handleSetSelectedNode = (node: any) => {
+    setSelectedNode(node);
+  };
   const [selectedEndpoint, setSelectedEndpoint] = useState("base"); // TODO: change to mainnet
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [hovered, setHovered] = useState("");
+  
+  // Handler pour le vote avec fallback sécurisé
+  const handleVoteClick = () => {
+    if (onOpenVoting) {
+      onOpenVoting();
+    } else {
+      console.warn('onOpenVoting not provided to PlayerMapGraph');
+    }
+  };
 
   // Charger les données de la sidebar
-  const { atomDetails, triples, positions, activities, connections, loading: sidebarLoading, error: sidebarError } = useSidebarData(walletAddress, Network.MAINNET);
+  const { atomDetails, triples, positions, activities, connections, loading: sidebarLoading, error: sidebarError } = useSidebarData(walletAddress, Network.MAINNET, constants);
+
+  // Détecter quand un node est sélectionné et vérifier si c'est le node de l'utilisateur
+  useEffect(() => {
+    if (selectedNode && atomDetails) {
+      // Vérifier si c'est le node de l'utilisateur
+      const isMyNode = selectedNode?.id === atomDetails?.id || selectedNode?.id === atomDetails?.term_id;
+      
+      if (isMyNode) {
+        // Ouvrir la sidebar seulement si c'est le node de l'utilisateur
+        setIsMyNode(true);
+        setSidebarOpen(true);
+      } else {
+        setIsMyNode(false);
+        setSidebarOpen(true); // Ouvrir sidebar pour autre atom aussi
+      }
+    }
+  }, [selectedNode, atomDetails]);
 
   // Styles identiques à NavigationBar.jsx
   const navBtnStyle = {
@@ -86,9 +124,11 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress }) => {
       >
         <GraphVisualization
           endpoint={selectedEndpoint}
-          onNodeSelect={setSelectedNode}
+          onNodeSelect={handleSetSelectedNode}
           onLoadingChange={setIsLoading}
           walletAddress={walletAddress}
+          gamesId={gamesId}
+          disableNodeDetailsSidebar={true}
         />
       </div>
 
@@ -107,7 +147,7 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress }) => {
         </div>
       )}
 
-      {/* Bouton "My View" identique à NavigationBar.jsx */}
+      {/* Bouton "My View" en haut à gauche */}
       <div
         style={{
           position: "absolute",
@@ -128,6 +168,36 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress }) => {
           onMouseLeave={() => setHovered("")}
         >
           <FaUser />
+        </button>
+      </div>
+
+      {/* Bouton "Vote" en bas à gauche */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "50%",
+          right: "18px",
+          zIndex: 50,
+        }}
+      >
+        <button
+          style={{
+            ...getBtnStyle("vote"),
+            fontSize: "18px",
+            fontWeight: "bolder",
+            width: "auto",
+            minWidth: "160px",
+            padding: "0 12px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+          }}
+          onClick={handleVoteClick}
+          aria-label="Vote"
+          onMouseEnter={() => setHovered("vote")}
+          onMouseLeave={() => setHovered("")}
+        >
+          GIVE A FEEDBACK <FaVoteYea />
         </button>
       </div>
 
@@ -160,58 +230,30 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress }) => {
         
         {!sidebarLoading && !sidebarError && (
           <>            
-            {atomDetails && (
+            <AtomDetailsSection 
+              atomDetails={atomDetails}
+              connections={connections}
+              walletAddress={walletAddress}
+            />
+            
+            {/* Afficher les autres sections seulement si c'est mon atom */}
+            {isMyNode && (
               <>
-                <p><strong>{atomDetails.label || "Not defined"}</strong></p>
+                <ClaimsSection activities={activities} />
                 
-                {/* Section Connections - Données réelles */}
-                <div style={{ marginBottom: '10px' }}>
-                  <p>Following: {connections.followers.length} - Followers: {connections.follows.length}</p>
-                </div>
+                <PositionsSection 
+                  accountId={walletAddress || ""} 
+                  walletConnected={walletConnected}
+                  walletAddress={walletAddress}
+                />
                 
-                <p><strong>ID :</strong> {atomDetails.description || "query a travailler"}</p>
-                <p><strong>Wallet :</strong> {walletAddress || "Not connected"}</p>
+                <ActivitySection accountId={walletAddress || ""} />
               </>
             )}
-            
-            {/* Section Claims - Données réelles */}
-            <div style={{ marginTop: '20px' }}>
-              <h3>My Claims ({activities.length})</h3>
-              {activities.length > 0 ? (
-                <ul style={{ fontSize: '14px', maxHeight: '200px', overflowY: 'auto' }}>
-                  {activities.slice(0, 5).map((claim, index) => (
-                    <li key={claim.term_id} style={{ marginBottom: '8px' }}>
-                      {claim.predicate.label} → {claim.object.label}
-                    </li>
-                  ))}
-                  {activities.length > 5 && <li>... and {activities.length - 5} others</li>}
-                </ul>
-              ) : (
-                <p>No claim found</p>
-              )}
-            </div>
-            
-            {/* Section Activity - Données réelles avec ActivityCard */}
-            <div style={{ marginTop: '20px' }}>
-              <h3>My Activity ({positions.length})</h3>
-              {positions.length > 0 ? (
-                <div style={{ fontSize: '14px', maxHeight: '200px', overflowY: 'auto' }}>
-                  {positions.slice(0, 5).map((position, index) => (
-                    <ActivityCard key={position.id || index} position={position} />
-                  ))}
-                  {positions.length > 5 && (
-                    <p style={{ color: "#fff", fontSize: '12px', textAlign: 'center', marginTop: '10px' }}>
-                      ... and {positions.length - 5} other activities
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <p>No activity found</p>
-              )}
-            </div>
           </>
         )}
       </SidebarDrawer>
+
     </div>
   );
 };

@@ -1,12 +1,16 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { Network, API_URLS } from "./hooks/useAtomData";
 import { useTripleByCreator } from "./hooks/useTripleByCreator";
+import { fetchPositions } from "./api/fetchPositions";
 import PlayerMapHome from "./PlayerMapHome";
 import PlayerMapGraph from "./PlayerMapGraph";
 import RegistrationForm from "./RegistrationForm";
 import { PLAYER_TRIPLE_TYPES } from "./utils/constants";
 import { ConnectWalletModal } from "./components/modals";
+import VotingModal from "./components/vote/VotingModal";
 import { PlayerMapQueryClientProvider } from "./contexts/QueryClientContext";
+import { PlayerMapConfig, DefaultPlayerMapConstants } from "./types/PlayerMapConfig";
+import { usePlayerConstants } from "./hooks/usePlayerConstants";
 import initGraphql from "./config/graphql";
 
 interface GraphComponentProps {
@@ -18,6 +22,7 @@ interface GraphComponentProps {
   onClose?: () => void;
   onCreatePlayer?: () => void;
   onConnectWallet?: () => void;
+  config?: PlayerMapConfig; // Configuration avec constantes personnalisées
 }
 
 const GraphComponent: React.FC<GraphComponentProps> = ({
@@ -28,11 +33,15 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
   onClose,
   onCreatePlayer,
   onConnectWallet,
+  config, // Configuration avec constantes personnalisées
 }) => {
   // Initialiser GraphQL au démarrage du composant
   useEffect(() => {
     initGraphql();
   }, []);
+
+  // Récupérer les constantes (personnalisées ou par défaut)
+  const constants: DefaultPlayerMapConstants = usePlayerConstants(config);
 
   // État pour suivre le réseau actuel (par défaut testnet)
   const [network, setNetwork] = useState<Network>(Network.MAINNET);
@@ -40,8 +49,15 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
   // État local pour le formulaire d'inscription
   const [isRegistrationFormOpen, setIsRegistrationFormOpen] = useState(false);
   
+  // État local pour la modal de vote
+  const [isVotingOpen, setIsVotingOpen] = useState(false);
+  
   // État pour la détection du wallet (plus fiable)
   const [isWalletReady, setIsWalletReady] = useState(false);
+  
+  // État pour les positions actives
+  const [activePositions, setActivePositions] = useState<any[]>([]);
+  const [positionsLoading, setPositionsLoading] = useState(false);
 
   const lowerCaseAddress = walletAddress ? walletAddress : "";
 
@@ -57,11 +73,44 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
     loading: tripleLoading,
     error: tripleError,
     triples: playerTriples,
-  } = useTripleByCreator(lowerCaseAddress, PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId.toString(), PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId.toString(), network);
+  } = useTripleByCreator(lowerCaseAddress, constants.PLAYER_TRIPLE_TYPES.PLAYER_GAME.predicateId, constants.PLAYER_TRIPLE_TYPES.PLAYER_GAME.objectId, network);
 
-  // Vérifie si l'utilisateur a un player atom
+  // Récupérer les positions actives quand le wallet est connecté
+  useEffect(() => {
+    const fetchActivePositions = async () => {
+      if (!isWalletReady || !walletAddress) {
+        setActivePositions([]);
+        return;
+      }
+
+      setPositionsLoading(true);
+      try {
+        const allPositions = await fetchPositions(walletAddress, network);
+        
+        // Filtrer les positions pour ne garder que celles sur le triple joueur spécifique
+        const playerTripleTermId = playerTriples.length > 0 ? playerTriples[0].term_id : null;
+        const gamePositions = allPositions.filter(position => {
+          // Vérifier si la position est sur le terme du triple joueur spécifique
+          return position.term?.id === playerTripleTermId;
+        });
+        
+        setActivePositions(gamePositions);
+      } catch (error) {
+        console.error('Error fetching positions:', error);
+        setActivePositions([]);
+      } finally {
+        setPositionsLoading(false);
+      }
+    };
+
+    fetchActivePositions();
+  }, [isWalletReady, walletAddress, network, playerTriples]);
+
+  // Vérifie si l'utilisateur a un player atom ET des positions actives
   const hasPlayerAtom = playerTriples.length > 0;
-  const isLoading = tripleLoading;
+  const hasActivePositions = activePositions.length > 0;
+  const hasConfirmedPlayer = hasPlayerAtom && hasActivePositions;
+  const isLoading = tripleLoading || positionsLoading;
   const hasError = tripleError;
 
   // Fonction pour gérer le clic sur le bouton Create Player dans notre composant
@@ -161,8 +210,8 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
           onConnectWallet={handleConnectWallet}
         />
 
-        {/* Affichage du PlayerMapHome, soit blurred en arrière-plan si wallet non connecté, soit normale si wallet connecté mais pas de player */}
-        {(!isWalletReady || (isWalletReady && !hasPlayerAtom)) && (
+        {/* Affichage du PlayerMapHome, soit blurred en arrière-plan si wallet non connecté, soit normale si wallet connecté mais pas de player confirmé */}
+        {(!isWalletReady || (isWalletReady && !hasConfirmedPlayer)) && (
           <div style={{ 
             filter: !isWalletReady ? "blur(3px)" : "none", 
             opacity: !isWalletReady ? 0.7 : 1,
@@ -179,9 +228,16 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
           </div>
         )}
 
-        {/* Si wallet connecté et player atom trouvé, afficher le PlayerMapGraph */}
-        {isWalletReady && hasPlayerAtom && (
-          <PlayerMapGraph walletAddress={walletAddress} />
+        {/* Si wallet connecté et player confirmé (atom + positions actives), afficher le PlayerMapGraph */}
+        {isWalletReady && hasConfirmedPlayer && (
+          <PlayerMapGraph 
+            walletAddress={walletAddress}
+            walletConnected={walletConnected}
+            walletHooks={walletHooks}
+            onOpenVoting={() => setIsVotingOpen(true)}
+            constants={constants} // Passer les constantes directement
+            gamesId={constants.COMMON_IDS.GAMES_ID} // Passer GAMES_ID à playermap-graph
+          />
         )}
 
         {/* Formulaire d'inscription - géré directement par GraphComponent avec le QueryClient local */}
@@ -192,9 +248,22 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
           walletAddress={walletAddress}
           wagmiConfig={wagmiConfig}
           walletHooks={walletHooks}
+          constants={constants} // Passer les constantes personnalisées !
         />
-      </div>
-    </PlayerMapQueryClientProvider>
+
+        {/* Modal de vote - seulement si wallet connecté et player confirmé */}
+        {isVotingOpen && isWalletReady && hasConfirmedPlayer && (
+          <VotingModal
+            walletConnected={walletConnected}
+            walletAddress={walletAddress}
+            publicClient={wagmiConfig?.publicClient}
+            wagmiConfig={wagmiConfig}
+            onClose={() => setIsVotingOpen(false)}
+            constants={constants} // Passer les constantes directement
+          />
+        )}
+        </div>
+      </PlayerMapQueryClientProvider>
   );
 };
 

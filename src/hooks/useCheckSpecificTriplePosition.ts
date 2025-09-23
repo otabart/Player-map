@@ -54,7 +54,7 @@ export const useCheckSpecificTriplePosition = ({
                   # Get vault positions (user only)
                   term {
                     id
-                    positions_aggregate(where: {account: {id: {_ilike: $walletAddress}}}) {
+                    positions_aggregate(where: {account: {id: {_ilike: $walletAddress}}, shares: {_gt: 0}}) {
                       aggregate {
                         count
                       }
@@ -67,7 +67,7 @@ export const useCheckSpecificTriplePosition = ({
                   # Get counter vault positions (user only)
                   counter_term {
                     id
-                    positions_aggregate(where: {account: {id: {_ilike: $walletAddress}}}) {
+                    positions_aggregate(where: {account: {id: {_ilike: $walletAddress}}, shares: {_gt: 0}}) {
                       aggregate {
                         count
                       }

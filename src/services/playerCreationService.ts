@@ -1,6 +1,6 @@
 import { useAtomCreation } from "../hooks/useAtomCreation";
 import { useBatchCreateTriple, TripleToCreate } from "../hooks/useBatchCreateTriple";
-import { PLAYER_TRIPLE_TYPES } from "../utils/constants";
+import { DefaultPlayerMapConstants } from "../types/PlayerMapConfig";
 
 // Interface pour les données du joueur
 export interface PlayerData {
@@ -14,11 +14,15 @@ export interface PlayerData {
 export const usePlayerCreationService = (
   walletConnected: any,
   walletAddress: string,
-  publicClient?: any // Ajout du publicClient
+  publicClient?: any, // Ajout du publicClient
+  constants: DefaultPlayerMapConstants // Constantes injectées
 ) => {
+  // Utiliser les constantes passées en paramètre
+  const { PLAYER_TRIPLE_TYPES } = constants;
+  
   // Hooks pour la création d'atomes et de triples
   const { createAtom } = useAtomCreation({ walletConnected, walletAddress, publicClient });
-  const { batchCreateTriple } = useBatchCreateTriple({ walletConnected, walletAddress, publicClient });
+  const { batchCreateTriple } = useBatchCreateTriple({ walletConnected, walletAddress, publicClient, constants });
 
   // Fonction pour créer un joueur complet
   const createPlayer = async (playerData: PlayerData): Promise<{
@@ -42,35 +46,20 @@ export const usePlayerCreationService = (
 
       // Étape 2: Créer les triples pour le joueur
       try {
-        // Préparation des triples standard
-        const triplesToCreate: TripleToCreate[] = [
-          {
+        // Préparation des triples standard (dynamique)
+        const triplesToCreate: TripleToCreate[] = Object.entries(PLAYER_TRIPLE_TYPES)
+          .filter(([key, value]) => 'objectId' in value && value.objectId !== null) // Exclure les triples avec objectId null (comme PLAYER_GUILD)
+          .map(([key, value]) => ({
             subjectId: playerAtomId,
-            predicateId: PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.predicateId,
-            objectId: PLAYER_TRIPLE_TYPES.IS_PLAYER_GAMES.objectId,
-          },
-          {
-            subjectId: playerAtomId,
-            predicateId: PLAYER_TRIPLE_TYPES.IS_FAIRPLAY.predicateId,
-            objectId: PLAYER_TRIPLE_TYPES.IS_FAIRPLAY.objectId,
-          },
-          {
-            subjectId: playerAtomId,
-            predicateId: PLAYER_TRIPLE_TYPES.IS_STRONG_BOSS.predicateId,
-            objectId: PLAYER_TRIPLE_TYPES.IS_STRONG_BOSS.objectId,
-          },
-          {
-            subjectId: playerAtomId,
-            predicateId: PLAYER_TRIPLE_TYPES.IS_STRONG_FIGHTER.predicateId,
-            objectId: PLAYER_TRIPLE_TYPES.IS_STRONG_FIGHTER.objectId,
-          }
-        ];
+            predicateId: BigInt(value.predicateId),
+            objectId: BigInt((value as any).objectId),
+          }));
 
         // Ajouter le triple de guilde si une guilde est spécifiée
         if (playerData.guildId) {
           triplesToCreate.push({
             subjectId: playerAtomId,
-            predicateId: PLAYER_TRIPLE_TYPES.IS_PLAYER_GUILD.predicateId,
+            predicateId: BigInt(PLAYER_TRIPLE_TYPES.PLAYER_GUILD.predicateId),
             objectId: playerData.guildId
           });
         }
