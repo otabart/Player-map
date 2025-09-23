@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   GraphVisualization,
   LoadingAnimation,
@@ -30,6 +30,12 @@ interface LoadingAnimationProps {}
 
 const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletConnected, walletHooks, onOpenVoting, constants, gamesId }) => {
   const [selectedNode, setSelectedNode] = useState<any>(null);
+  const [isMyNode, setIsMyNode] = useState(false); // Nouvel état pour différencier mon atom vs autre
+  
+  // Wrapper pour setSelectedNode
+  const handleSetSelectedNode = (node: any) => {
+    setSelectedNode(node);
+  };
   const [selectedEndpoint, setSelectedEndpoint] = useState("base"); // TODO: change to mainnet
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -46,6 +52,23 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
 
   // Charger les données de la sidebar
   const { atomDetails, triples, positions, activities, connections, loading: sidebarLoading, error: sidebarError } = useSidebarData(walletAddress, Network.MAINNET, constants);
+
+  // Détecter quand un node est sélectionné et vérifier si c'est le node de l'utilisateur
+  useEffect(() => {
+    if (selectedNode && atomDetails) {
+      // Vérifier si c'est le node de l'utilisateur
+      const isMyNode = selectedNode?.id === atomDetails?.id || selectedNode?.id === atomDetails?.term_id;
+      
+      if (isMyNode) {
+        // Ouvrir la sidebar seulement si c'est le node de l'utilisateur
+        setIsMyNode(true);
+        setSidebarOpen(true);
+      } else {
+        setIsMyNode(false);
+        setSidebarOpen(true); // Ouvrir sidebar pour autre atom aussi
+      }
+    }
+  }, [selectedNode, atomDetails]);
 
   // Styles identiques à NavigationBar.jsx
   const navBtnStyle = {
@@ -101,10 +124,11 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
       >
         <GraphVisualization
           endpoint={selectedEndpoint}
-          onNodeSelect={setSelectedNode}
+          onNodeSelect={handleSetSelectedNode}
           onLoadingChange={setIsLoading}
           walletAddress={walletAddress}
           gamesId={gamesId}
+          disableNodeDetailsSidebar={true}
         />
       </div>
 
@@ -151,8 +175,8 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
       <div
         style={{
           position: "absolute",
-          bottom: "18px",
-          left: "18px",
+          bottom: "50%",
+          right: "18px",
           zIndex: 50,
         }}
       >
@@ -212,15 +236,20 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
               walletAddress={walletAddress}
             />
             
-            <ClaimsSection activities={activities} />
-            
-            <PositionsSection 
-              accountId={walletAddress || ""} 
-              walletConnected={walletConnected}
-              walletAddress={walletAddress}
-            />
-            
-            <ActivitySection accountId={walletAddress || ""} />
+            {/* Afficher les autres sections seulement si c'est mon atom */}
+            {isMyNode && (
+              <>
+                <ClaimsSection activities={activities} />
+                
+                <PositionsSection 
+                  accountId={walletAddress || ""} 
+                  walletConnected={walletConnected}
+                  walletAddress={walletAddress}
+                />
+                
+                <ActivitySection accountId={walletAddress || ""} />
+              </>
+            )}
           </>
         )}
       </SidebarDrawer>

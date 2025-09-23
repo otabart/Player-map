@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { Network, API_URLS } from "./hooks/useAtomData";
 import { useTripleByCreator } from "./hooks/useTripleByCreator";
+import { fetchPositions } from "./api/fetchPositions";
 import PlayerMapHome from "./PlayerMapHome";
 import PlayerMapGraph from "./PlayerMapGraph";
 import RegistrationForm from "./RegistrationForm";
@@ -53,6 +54,10 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
   
   // État pour la détection du wallet (plus fiable)
   const [isWalletReady, setIsWalletReady] = useState(false);
+  
+  // État pour les positions actives
+  const [activePositions, setActivePositions] = useState<any[]>([]);
+  const [positionsLoading, setPositionsLoading] = useState(false);
 
   const lowerCaseAddress = walletAddress ? walletAddress : "";
 
@@ -70,9 +75,42 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
     triples: playerTriples,
   } = useTripleByCreator(lowerCaseAddress, constants.PLAYER_TRIPLE_TYPES.PLAYER_GAME.predicateId, constants.PLAYER_TRIPLE_TYPES.PLAYER_GAME.objectId, network);
 
-  // Vérifie si l'utilisateur a un player atom
+  // Récupérer les positions actives quand le wallet est connecté
+  useEffect(() => {
+    const fetchActivePositions = async () => {
+      if (!isWalletReady || !walletAddress) {
+        setActivePositions([]);
+        return;
+      }
+
+      setPositionsLoading(true);
+      try {
+        const allPositions = await fetchPositions(walletAddress, network);
+        
+        // Filtrer les positions pour ne garder que celles sur le triple joueur spécifique
+        const playerTripleTermId = playerTriples.length > 0 ? playerTriples[0].term_id : null;
+        const gamePositions = allPositions.filter(position => {
+          // Vérifier si la position est sur le terme du triple joueur spécifique
+          return position.term?.id === playerTripleTermId;
+        });
+        
+        setActivePositions(gamePositions);
+      } catch (error) {
+        console.error('Error fetching positions:', error);
+        setActivePositions([]);
+      } finally {
+        setPositionsLoading(false);
+      }
+    };
+
+    fetchActivePositions();
+  }, [isWalletReady, walletAddress, network, playerTriples]);
+
+  // Vérifie si l'utilisateur a un player atom ET des positions actives
   const hasPlayerAtom = playerTriples.length > 0;
-  const isLoading = tripleLoading;
+  const hasActivePositions = activePositions.length > 0;
+  const hasConfirmedPlayer = hasPlayerAtom && hasActivePositions;
+  const isLoading = tripleLoading || positionsLoading;
   const hasError = tripleError;
 
   // Fonction pour gérer le clic sur le bouton Create Player dans notre composant
@@ -172,8 +210,8 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
           onConnectWallet={handleConnectWallet}
         />
 
-        {/* Affichage du PlayerMapHome, soit blurred en arrière-plan si wallet non connecté, soit normale si wallet connecté mais pas de player */}
-        {(!isWalletReady || (isWalletReady && !hasPlayerAtom)) && (
+        {/* Affichage du PlayerMapHome, soit blurred en arrière-plan si wallet non connecté, soit normale si wallet connecté mais pas de player confirmé */}
+        {(!isWalletReady || (isWalletReady && !hasConfirmedPlayer)) && (
           <div style={{ 
             filter: !isWalletReady ? "blur(3px)" : "none", 
             opacity: !isWalletReady ? 0.7 : 1,
@@ -190,8 +228,8 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
           </div>
         )}
 
-        {/* Si wallet connecté et player atom trouvé, afficher le PlayerMapGraph */}
-        {isWalletReady && hasPlayerAtom && (
+        {/* Si wallet connecté et player confirmé (atom + positions actives), afficher le PlayerMapGraph */}
+        {isWalletReady && hasConfirmedPlayer && (
           <PlayerMapGraph 
             walletAddress={walletAddress}
             walletConnected={walletConnected}
@@ -213,8 +251,8 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
           constants={constants} // Passer les constantes personnalisées !
         />
 
-        {/* Modal de vote - seulement si wallet connecté et player atom trouvé */}
-        {isVotingOpen && isWalletReady && hasPlayerAtom && (
+        {/* Modal de vote - seulement si wallet connecté et player confirmé */}
+        {isVotingOpen && isWalletReady && hasConfirmedPlayer && (
           <VotingModal
             walletConnected={walletConnected}
             walletAddress={walletAddress}

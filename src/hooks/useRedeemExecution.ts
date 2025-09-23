@@ -30,8 +30,9 @@ export const useRedeemExecution = ({ walletConnected, walletAddress }: UseRedeem
 
       for (const position of selectedPositionsData) {
         const redeemAmount = redeemAmounts[position.id] || position.shares;
+        const curveId = position.curve_id;
         termIds.push(position.term.id as `0x${string}`);
-        curveIds.push(BigInt(1)); // Curve ID par défaut
+        curveIds.push(BigInt(curveId));
         shares.push(BigInt(redeemAmount));
         minAssets.push(BigInt(0)); // Min assets par défaut
       }

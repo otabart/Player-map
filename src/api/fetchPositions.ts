@@ -20,6 +20,7 @@ export const fetchPositions = async (
             }) {
               id
               shares
+              curve_id
               account {
                 id
                 label
