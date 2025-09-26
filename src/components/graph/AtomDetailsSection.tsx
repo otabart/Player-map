@@ -18,7 +18,7 @@ const AtomDetailsSection: React.FC<AtomDetailsSectionProps> = ({
 
   return (
     <>
-      <p><strong>{atomDetails.label || "Not defined"} local</strong></p>
+      <p><strong>{atomDetails.label || "Not defined"}</strong></p>
       
       {/* Section Connections - Données réelles */}
       <div style={{ 
@@ -28,7 +28,7 @@ const AtomDetailsSection: React.FC<AtomDetailsSectionProps> = ({
         <p>Following: {connections.followers.length} - Followers: {connections.follows.length}</p>
       </div>
       
-      <p><strong>ID :</strong> {
+      <p><strong>ID / Description :</strong> <br />{
         atomDetails.value?.person?.description ||
         atomDetails.value?.organization?.description ||
         atomDetails.value?.thing?.description ||

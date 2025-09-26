@@ -4,14 +4,24 @@ import { TripleBubble, PositionBubble } from './index';
 
 interface ClaimsSectionProps {
   activities: any[];
+  title?: string;
+  walletAddress?: string;
+  walletConnected?: any;
+  publicClient?: any;
 }
 
-const ClaimsSection: React.FC<ClaimsSectionProps> = ({ activities }) => {
+const ClaimsSection: React.FC<ClaimsSectionProps> = ({ 
+  activities, 
+  title = "My Claims", 
+  walletAddress, 
+  walletConnected, 
+  publicClient 
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <div style={{ marginTop: '10px' }}>
-      <h3>My Claims ({activities.length})</h3>
+      <h3>{title} ({activities.length})</h3>
       {activities.length > 0 ? (
         <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
           {activities.slice(0, 3).map((claim) => (
@@ -101,6 +111,9 @@ const ClaimsSection: React.FC<ClaimsSectionProps> = ({ activities }) => {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         activities={activities}
+        walletAddress={walletAddress}
+        walletConnected={walletConnected}
+        publicClient={publicClient}
       />
     </div>
   );

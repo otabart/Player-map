@@ -89,7 +89,7 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
         
         // Filtrer les positions pour ne garder que celles sur le triple joueur spécifique
         const playerTripleTermId = playerTriples.length > 0 ? playerTriples[0].term_id : null;
-        const gamePositions = allPositions.filter(position => {
+        const gamePositions = allPositions.filter((position: any) => {
           // Vérifier si la position est sur le terme du triple joueur spécifique
           return position.term?.id === playerTripleTermId;
         });
@@ -237,6 +237,7 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
             onOpenVoting={() => setIsVotingOpen(true)}
             constants={constants} // Passer les constantes directement
             gamesId={constants.COMMON_IDS.GAMES_ID} // Passer GAMES_ID à playermap-graph
+            wagmiConfig={wagmiConfig} // Passer wagmiConfig
           />
         )}
 

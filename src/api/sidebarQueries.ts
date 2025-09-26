@@ -5,6 +5,7 @@ import { fetchClaimsByAccount } from './fetchClaimsByAccount';
 import { fetchFollowsAndFollowers } from './fetchFollowsAndFollowers';
 import { fetchActivityHistory } from './fetchActivityHistory';
 import { fetchPositions } from './fetchPositions';
+import { fetchClaimsBySubject } from './fetchClaimsBySubject';
 
 // Re-export all functions for backward compatibility
 export {
@@ -13,5 +14,6 @@ export {
   fetchClaimsByAccount,
   fetchFollowsAndFollowers,
   fetchActivityHistory,
-  fetchPositions
+  fetchPositions,
+  fetchClaimsBySubject
 };

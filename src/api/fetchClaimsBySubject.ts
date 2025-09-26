@@ -1,10 +1,8 @@
-// THIS QUERY IS NOT USED ACTUALLY
-
 import { Network, API_URLS } from '../hooks/useAtomData';
 
-// Fetch Claims by Account
-export const fetchClaimsByAccount = async (
-  accountId: string,
+// Fetch Claims by Subject (atom as subject)
+export const fetchClaimsBySubject = async (
+  subjectId: string,
   network = Network.MAINNET
 ) => {
   try {
@@ -14,8 +12,8 @@ export const fetchClaimsByAccount = async (
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         query: `
-        query ClaimsByAccount($accountId: String!) {
-          triples(where: { creator_id: { _eq: $accountId } }) {
+        query ClaimsBySubject($subjectId: String!) {
+          triples(where: { subject_id: { _eq: $subjectId } }) {
             term_id
             subject {
               term_id
@@ -50,18 +48,14 @@ export const fetchClaimsByAccount = async (
           }
         }
       `,
-        variables: { accountId }
+        variables: { subjectId }
       })
     });
 
     const data = await response.json();
     return data.data?.triples || [];
   } catch (error) {
-    console.error('Error fetching claims by account:', error);
+    console.error('Error fetching claims by subject:', error);
     return [];
   }
 };
-
-
-
-

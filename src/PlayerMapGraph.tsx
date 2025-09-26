@@ -6,6 +6,8 @@ import {
 import { SidebarDrawer, AtomDetailsSection, ClaimsSection, PositionsSection, ActivitySection } from "./components/graph";
 import { FaUser, FaVoteYea } from "react-icons/fa";
 import { useSidebarData } from "./hooks/useSidebarData";
+import { useSelectedAtomData } from "./hooks/useSelectedAtomData";
+import { useSelectedAtomClaims } from "./hooks/useSelectedAtomClaims";
 import { Network } from "./hooks/useAtomData";
 import { DefaultPlayerMapConstants } from "./types/PlayerMapConfig";
 
@@ -16,6 +18,7 @@ interface PlayerMapGraphProps {
   onOpenVoting?: () => void; // Callback pour ouvrir la modal depuis GraphComponent
   constants: DefaultPlayerMapConstants; // Constantes injectées directement
   gamesId?: string; // GAMES_ID pour playermap-graph
+  wagmiConfig?: any; // Ajouter wagmiConfig
 }
 
 // Définir les types pour les props des composants
@@ -24,11 +27,13 @@ interface GraphVisualizationProps {
   onNodeSelect: (node: any) => void;
   onLoadingChange: (isLoading: boolean) => void;
   walletAddress?: string;
+  gamesId?: string;
+  disableNodeDetailsSidebar?: boolean;
 }
 
 interface LoadingAnimationProps {}
 
-const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletConnected, walletHooks, onOpenVoting, constants, gamesId }) => {
+const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletConnected, walletHooks, onOpenVoting, constants, gamesId, wagmiConfig }) => {
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [isMyNode, setIsMyNode] = useState(false); // Nouvel état pour différencier mon atom vs autre
   
@@ -50,14 +55,20 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
     }
   };
 
-  // Charger les données de la sidebar
-  const { atomDetails, triples, positions, activities, connections, loading: sidebarLoading, error: sidebarError } = useSidebarData(walletAddress, Network.MAINNET, constants);
+  // Charger les données de la sidebar (pour mon atom)
+  const { atomDetails: myAtomDetails, triples, positions, activities, connections, loading: sidebarLoading, error: sidebarError } = useSidebarData(walletAddress, Network.MAINNET, constants);
+  
+  // Charger les données de l'atom sélectionné
+  const { atomDetails: selectedAtomDetails, loading: selectedLoading, error: selectedError } = useSelectedAtomData(selectedNode, Network.MAINNET);
+  
+  // Charger les claims de l'atom sélectionné
+  const { claims: selectedClaims, loading: selectedClaimsLoading, error: selectedClaimsError } = useSelectedAtomClaims(selectedNode, Network.MAINNET);
 
   // Détecter quand un node est sélectionné et vérifier si c'est le node de l'utilisateur
   useEffect(() => {
-    if (selectedNode && atomDetails) {
+    if (selectedNode && myAtomDetails) {
       // Vérifier si c'est le node de l'utilisateur
-      const isMyNode = selectedNode?.id === atomDetails?.id || selectedNode?.id === atomDetails?.term_id;
+      const isMyNode = selectedNode?.id === myAtomDetails?.id || selectedNode?.id === myAtomDetails?.term_id;
       
       if (isMyNode) {
         // Ouvrir la sidebar seulement si c'est le node de l'utilisateur
@@ -68,7 +79,7 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
         setSidebarOpen(true); // Ouvrir sidebar pour autre atom aussi
       }
     }
-  }, [selectedNode, atomDetails]);
+  }, [selectedNode, myAtomDetails]);
 
   // Styles identiques à NavigationBar.jsx
   const navBtnStyle = {
@@ -162,7 +173,10 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
       >
         <button
           style={getBtnStyle("profile")}
-          onClick={() => setSidebarOpen(true)}
+          onClick={() => {
+            setIsMyNode(true); // Forcer mode "my view"
+            setSidebarOpen(true);
+          }}
           aria-label="Profile"
           onMouseEnter={() => setHovered("profile")}
           onMouseLeave={() => setHovered("")}
@@ -220,27 +234,34 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       >        
-        {sidebarLoading && (
+        {(sidebarLoading || selectedLoading || selectedClaimsLoading) && (
           <p>Loading data...</p>
         )}
         
-        {sidebarError && (
-          <p style={{ color: 'red' }}>Error : {sidebarError}</p>
+        {(sidebarError || selectedError || selectedClaimsError) && (
+          <p style={{ color: 'red' }}>Error : {sidebarError || selectedError || selectedClaimsError}</p>
         )}
         
-        {!sidebarLoading && !sidebarError && (
+        {!sidebarLoading && !sidebarError && !selectedLoading && !selectedError && !selectedClaimsLoading && !selectedClaimsError && (
           <>            
             <AtomDetailsSection 
-              atomDetails={atomDetails}
-              connections={connections}
+              atomDetails={isMyNode ? myAtomDetails : selectedAtomDetails}
+              connections={isMyNode ? connections : { follows: [], followers: [] }}
               walletAddress={walletAddress}
+            />
+            
+            {/* Afficher les claims pour tous les atoms */}
+            <ClaimsSection 
+              activities={isMyNode ? activities : selectedClaims} 
+              title={isMyNode ? "My Claims" : "Claims"}
+              walletAddress={walletAddress}
+              walletConnected={walletConnected}
+              publicClient={wagmiConfig?.publicClient}
             />
             
             {/* Afficher les autres sections seulement si c'est mon atom */}
             {isMyNode && (
               <>
-                <ClaimsSection activities={activities} />
-                
                 <PositionsSection 
                   accountId={walletAddress || ""} 
                   walletConnected={walletConnected}

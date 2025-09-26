@@ -11,18 +11,12 @@ export const usePlayerConstants = (config?: PlayerMapConfig): DefaultPlayerMapCo
   return useMemo(() => {
     // Si des constantes personnalisées sont fournies, les utiliser
     if (config?.constants) {
-      console.log('🎯 PlayerMap: Using CUSTOM constants from staging-front', {
-        COMMON_IDS: config.constants.COMMON_IDS,
-        PLAYER_TRIPLE_TYPES: config.constants.PLAYER_TRIPLE_TYPES,
-        OFFICIAL_GUILDS: config.constants.OFFICIAL_GUILDS,
-        PREDEFINED_CLAIM_IDS: config.constants.PREDEFINED_CLAIM_IDS
-      });
       return {
         ...config.constants,
         UNIT_VALUE // Toujours depuis Player-map, jamais paramétrable
       };
     }
-    
+
     // Sinon, utiliser les constantes par défaut
     console.log('🔧 PlayerMap: Using DEFAULT constants from Player-map', {
       COMMON_IDS: DEFAULT_CONSTANTS.COMMON_IDS,
