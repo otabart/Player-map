@@ -14,8 +14,8 @@ export interface PlayerData {
 export const usePlayerCreationService = (
   walletConnected: any,
   walletAddress: string,
-  publicClient?: any, // Ajout du publicClient
-  constants: DefaultPlayerMapConstants // Constantes injectées
+  constants: DefaultPlayerMapConstants, // Constantes injectées
+  publicClient?: any // Ajout du publicClient
 ) => {
   // Utiliser les constantes passées en paramètre
   const { PLAYER_TRIPLE_TYPES } = constants;

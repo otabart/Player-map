@@ -73,8 +73,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   const { createPlayer } = usePlayerCreationService(
     walletConnected, 
     walletAddress || '',
-    publicClient,
-    constants // Passer les constantes personnalisées !
+    constants, // Passer les constantes personnalisées !
+    publicClient
   );
 
   const { isCorrectNetwork, currentChainId, targetChainId, allowedChainIds } = useNetworkCheck({

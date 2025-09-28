@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Network } from './useAtomData';
-import { fetchTriplesForAgent, fetchPositions, fetchClaimsByAccount, fetchFollowsAndFollowers } from '../api/sidebarQueries';
+import { fetchTriplesForAgent, fetchPositions, fetchFollowsAndFollowers, fetchClaimsBySubject } from '../api/sidebarQueries';
 import { useTripleByCreator } from './useTripleByCreator';
 import { DefaultPlayerMapConstants } from '../types/PlayerMapConfig';
 
@@ -31,7 +31,7 @@ export const useSidebarData = (
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Utiliser les constantes passées en paramètre
   const { COMMON_IDS } = constants;
 
@@ -60,16 +60,14 @@ export const useSidebarData = (
 
       try {
         // Charger les données en parallèle
-        const [triplesData, positionsData, claimsData, connectionsData] = await Promise.all([
+        const [triplesData, positionsData, connectionsData] = await Promise.all([
           fetchTriplesForAgent(walletAddress, network),
           fetchPositions(walletAddress, network),
-          fetchClaimsByAccount(walletAddress, network), // Ajouter les claims
           fetchFollowsAndFollowers(COMMON_IDS.FOLLOWS, walletAddress, network) // Ajouter les connections
         ]);
 
         setTriples(triplesData);
         setPositions(positionsData);
-        setActivities(claimsData); // Utiliser les claims pour les activités
         setConnections(connectionsData); // Utiliser les connections
       } catch (err) {
         console.error('Error loading sidebar data:', err);
@@ -81,6 +79,26 @@ export const useSidebarData = (
 
     loadSidebarData();
   }, [walletAddress, network]);
+
+  // Charger les claims séparément quand atomDetails est disponible
+  useEffect(() => {
+    if (!atomDetails) {
+      setActivities([]);
+      return;
+    }
+
+    const loadClaims = async () => {
+      try {
+        const claimsData = await fetchClaimsBySubject(atomDetails.term_id, network);
+        setActivities(claimsData);
+      } catch (err) {
+        console.error('Error loading claims:', err);
+        setActivities([]);
+      }
+    };
+
+    loadClaims();
+  }, [atomDetails, network]);
 
   return {
     atomDetails,

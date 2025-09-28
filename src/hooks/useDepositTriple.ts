@@ -18,7 +18,7 @@ export const useDepositTriple = ({
   network = Network.MAINNET,
 }: UseDepositTripleProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Helper function to fetch triple details via GraphQL
   const fetchTripleDetails = async (tripleId: string) => {
     try {
@@ -144,7 +144,9 @@ export const useDepositTriple = ({
         }
 
         // Calculate value in wei
-        const depositValue = UNIT_VALUE * BigInt(vote.units);
+        // Convert decimal units (0.001) to integer units (1) before BigInt
+        const unitsInInteger = Math.round(vote.units * 1000); // 0.001 -> 1
+        const depositValue = UNIT_VALUE * BigInt(unitsInInteger);
 
         // Add to arrays
         termIds.push(targetId as `0x${string}`);
