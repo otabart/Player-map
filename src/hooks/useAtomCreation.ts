@@ -31,7 +31,7 @@ export const useAtomCreation = ({ walletConnected, walletAddress, publicClient }
     }
 
     try {
-      // 1. Formater les données selon le schéma
+      // 1. Formater les données selon le schéma (comme dans buildproof)
       const atomData: IpfsAtom = {
         '@context': 'https://schema.org/',
         '@type': 'Thing',
@@ -44,41 +44,29 @@ export const useAtomCreation = ({ walletConnected, walletAddress, publicClient }
         atomData.image = await ipfsToHttpUrl(atomData.image);
       }
 
-      // 2. Envoyer les données à IPFS via Pinata
+      // 2. Convertir les données JSON en bytes pour le contrat (comme le backend original)
+      const jsonString = JSON.stringify(atomData);
+      const dataBytes = toHex(jsonString);
+
+      // 3. Upload vers IPFS pour référence (optionnel)
       const { ipfsHash } = await hashDataToIPFS(atomData);
 
-      // 3. Convertir le hash IPFS en hex pour le contrat
-      const hexData = toHex(ipfsHash);
-
-      console.log('Contract address:', ATOM_CONTRACT_ADDRESS);
-      console.log('VALUE_PER_ATOM:', VALUE_PER_ATOM.toString());
-      console.log('Hex data:', hexData);
-
-      // Convertir hexData en bytes correctement
-      const dataBytes = hexData as `0x${string}`;
-
       // 4. CALCULER L'ID DE L'ATOME AVANT LA TRANSACTION
-      console.log('Calculating atom ID using keccak256(encodePacked)...');
       const atomIdHex = keccak256(encodePacked(['bytes'], [dataBytes]));
 
       const atomId = BigInt(atomIdHex);
-      console.log('Calculated atom ID:', atomId.toString());
 
       // 5. Créer l'atome avec createAtoms
-      console.log('Creating atom with createAtoms...');
       const txHash = await walletConnected.writeContract({
         address: ATOM_CONTRACT_ADDRESS,
         abi: atomABI,
         functionName: 'createAtoms',
         args: [
-          [dataBytes], // data: bytes[] - tableau avec un seul élément bytes
-          [VALUE_PER_ATOM] // assets: uint256[] - tableau avec la valeur pour un atome
+          [dataBytes],
+          [VALUE_PER_ATOM]
         ],
         value: VALUE_PER_ATOM,
       });
-
-      console.log('Transaction hash:', txHash);
-      console.log('Atom created successfully with ID:', atomId.toString());
 
       return {
         atomId,

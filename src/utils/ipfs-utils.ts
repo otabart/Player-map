@@ -1,46 +1,28 @@
-import axios from 'axios'
-import { getAuthHeader, isAuthenticated } from './auth'
-import { getConfig } from './config'
-
-interface IpfsHashResponse {
-  ipfs_hash: string
-  http_url: string
-}
+import { getPinataConstants } from './globalConstants'
+import { uploadToPinata } from './pinata'
 
 export const hashDataToIPFS = async (data: any) => {
   try {
-    // Vérifier si l'utilisateur est authentifié
-    if (!isAuthenticated()) {
-      throw new Error("Vous devez être connecté pour envoyer des données à IPFS")
-  }
+    // Récupérer les constantes Pinata
+    const constants = getPinataConstants();
+    if (!constants?.PINATA_CONFIG?.JWT_KEY || !constants?.PINATA_CONFIG?.IPFS_GATEWAY) {
+      throw new Error("Configuration Pinata manquante. Appelez setPinataConstants() avec PINATA_CONFIG");
+    }
 
-    // La fonction getConfig() lancera une erreur si la configuration n'est pas initialisée
-    const { apiUrl } = getConfig();
-    
-    const url = `${apiUrl}/ipfs/hash_data`;
+    // Créer un fichier JSON à partir des données
+    const jsonBlob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    const jsonFile = new File([jsonBlob], 'data.json', { type: 'application/json' });
 
-    const response = await axios.post<IpfsHashResponse>(
-      url,
-      { data },
-      {
-      headers: {
-          'Content-Type': 'application/json',
-          'Authorization': getAuthHeader()
-        }
-      }
-    )
+    // Uploader le JSON vers Pinata
+    const ipfsUrl = await uploadToPinata(jsonFile);
+    const hash = ipfsUrl.replace('ipfs://', '');
+    const PINATA_GATEWAY = constants.PINATA_CONFIG.IPFS_GATEWAY;
 
     return {
-      ipfsHash: response.data.ipfs_hash,
-      httpUrl: response.data.http_url
+      ipfsHash: `ipfs://${hash}`, // ← AJOUTER LE PRÉFIXE ipfs://
+      httpUrl: `https://${PINATA_GATEWAY}/ipfs/${hash}`
     }
   } catch (error) {
-    // Si l'erreur vient de getConfig(), on la réexpose clairement
-    if (error instanceof Error && error.message.includes('Configuration Player-map non initialisée')) {
-      console.error('Erreur de configuration Player-map:', error.message);
-      throw new Error("Erreur de configuration: Initialisez la bibliothèque Player-map avec PlayerMapConfig.init() avant utilisation");
-    }
-    
     console.error('Erreur lors du hachage de données vers IPFS:', error)
     throw error;
   }

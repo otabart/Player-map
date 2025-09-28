@@ -9,12 +9,7 @@ import { useDepositTriple } from "./hooks/useDepositTriple";
 import { useCheckSpecificTriplePosition } from "./hooks/useCheckSpecificTriplePosition";
 import { useDisplayTriplesWithPosition } from "./hooks/useDisplayTriplesWithPosition";
 import { checkTriplePosition } from "./utils/debugPosition";
-import {
-  setAuthToken,
-  getAuthToken,
-  isAuthenticated,
-  clearAuthToken,
-} from "./utils/auth";
+// Auth supprimé - plus nécessaire
 import { initConfig, getConfig } from "./utils/config";
 
 // Définition de l'interface de configuration pour l'API publique
@@ -34,10 +29,6 @@ export {
   useCheckSpecificTriplePosition,
   useDisplayTriplesWithPosition,
   checkTriplePosition,
-  setAuthToken,
-  getAuthToken,
-  isAuthenticated,
-  clearAuthToken,
 };
 
 // Exporter les types pour le composant de vote
@@ -67,22 +58,11 @@ export const PlayerMapConfig = {
   get: getConfig,
 };
 
-// Exporter les fonctions d'authentification
-export const auth = {
-  setAuthToken,
-  getAuthToken,
-  isAuthenticated,
-  clearAuthToken,
+// Auth supprimé - plus nécessaire
+import { setPinataConstants } from "./utils/globalConstants";
 
-  // Fonction d'initialisation pour les applications intégrant la bibliothèque
-  initialize: (token: string) => {
-    if (token) {
-      setAuthToken(token);
-      return true;
-    }
-    return false;
-  },
-};
+// Exporter setPinataConstants pour les apps
+export { setPinataConstants };
 
 // Exporter un composant par défaut
 export default PlayerMapHome;
