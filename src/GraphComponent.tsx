@@ -68,7 +68,6 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
     setIsWalletReady(hasConnectedWallet);
   }, [walletAddress]);
 
-  // Étape unique: Vérifier si l'utilisateur a un Player atom sur le jeu
   const {
     loading: tripleLoading,
     error: tripleError,
@@ -87,11 +86,18 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
       try {
         const allPositions = await fetchPositions(walletAddress, network);
         
-        // Filtrer les positions pour ne garder que celles sur le triple joueur spécifique
-        const playerTripleTermId = playerTriples.length > 0 ? playerTriples[0].term_id : null;
+        // Filtrer les positions pour ne garder que celles sur les triples joueur "is player of"
+        // Trouver TOUS les triples avec le bon prédicat (is player of)
+        const playerGameTriples = playerTriples.filter(triple => 
+          triple.predicate_id === constants.PLAYER_TRIPLE_TYPES.PLAYER_GAME.predicateId
+          && triple.object_id === constants.PLAYER_TRIPLE_TYPES.PLAYER_GAME.objectId
+        );
+        const playerTripleTermIds = playerGameTriples.map(triple => triple.term_id);
+        
         const gamePositions = allPositions.filter((position: any) => {
-          // Vérifier si la position est sur le terme du triple joueur spécifique
-          return position.term?.id === playerTripleTermId;
+          // Vérifier si la position est sur UN DES termes des triples joueur
+          const matches = playerTripleTermIds.includes(position.term?.id);
+          return matches;
         });
         
         setActivePositions(gamePositions);
