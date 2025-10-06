@@ -5,6 +5,7 @@ import {
 } from "playermap_graph";
 import { SidebarDrawer, AtomDetailsSection, ClaimsSection, PositionsSection, ActivitySection } from "./components/graph";
 import { FaUser, FaVoteYea } from "react-icons/fa";
+import Atom from "./assets/img/atom.svg";
 import { useSidebarData } from "./hooks/useSidebarData";
 import { useSelectedAtomData } from "./hooks/useSelectedAtomData";
 import { useSelectedAtomClaims } from "./hooks/useSelectedAtomClaims";
@@ -87,8 +88,8 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
     color: "#18181b",
     border: "none",
     borderRadius: 12,
-    width: 44,
-    height: 44,
+    width: 54,
+    height: 54,
     fontSize: 22,
     fontWeight: "bold" as const,
     boxShadow: "0 2px 8px rgba(0,0,0,0.18)",
@@ -162,8 +163,8 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
       <div
         style={{
           position: "absolute",
-          top: "18px",
-          left: "18px",
+          top: "5px",
+          left: "5px",
           zIndex: 50,
           display: "flex",
           flexDirection: "row",
@@ -185,7 +186,7 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
         </button>
       </div>
 
-      {/* Bouton "Vote" en bas à gauche */}
+      {/* Bouton "Vote" */}
       <div
         style={{
           position: "absolute",
@@ -211,7 +212,7 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
           onMouseEnter={() => setHovered("vote")}
           onMouseLeave={() => setHovered("")}
         >
-          GIVE A FEEDBACK <FaVoteYea />
+          <img src={Atom} alt="Atom" style={{ width: "44px", marginRight: "4px" }} />SPEAK UP
         </button>
       </div>
 
@@ -221,7 +222,6 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
           style={{
             position: "absolute",
             inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.35)",
             zIndex: 1200,
             pointerEvents: "auto",
           }}

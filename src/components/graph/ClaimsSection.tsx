@@ -52,13 +52,13 @@ const ClaimsSection: React.FC<ClaimsSectionProps> = ({
               >
                 {/* Triple linéaire : predicate → object */}
                 <div style={{ display: 'flex', flex: 1, alignItems: 'center', gap: '8px' }}>
-                  <TripleBubble
-                    subject=""
-                    predicate={claim.predicate.label}
-                    object={claim.object.label}
-                    fontSize="12px"
-                    showArrows={false}
-                  />
+                <TripleBubble
+                  subject=""
+                  predicate={String(claim.predicate?.label ?? '')}
+                  object={String(claim.object?.label ?? '')}
+                  fontSize="12px"
+                  showArrows={false}
+                />
                 </div>
 
                 {/* Positions For/Against */}

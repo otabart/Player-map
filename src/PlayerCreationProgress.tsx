@@ -218,14 +218,14 @@ const PlayerCreationProgress: React.FC<PlayerCreationProgressProps> = ({
                 textAlign: "left",
               }}
             >
-              Pseudo
+              Username
             </label>
             <input
               type="text"
               name="pseudo"
               value={formData.pseudo}
               onChange={handleInputChange}
-              placeholder="Enter your pseudo"
+              placeholder="Enter your username"
               style={{
                 width: "100%",
                 padding: "8px",
@@ -246,14 +246,14 @@ const PlayerCreationProgress: React.FC<PlayerCreationProgressProps> = ({
                 textAlign: "left",
               }}
             >
-              User UID
+              Player UID (optional)
             </label>
             <input
               type="text"
               name="userId"
               value={formData.userId}
               onChange={handleInputChange}
-              placeholder="Enter your BossFighters UID"
+              placeholder="Enter your Player UID"
               style={{
                 width: "100%",
                 padding: "8px",
@@ -289,7 +289,7 @@ const PlayerCreationProgress: React.FC<PlayerCreationProgressProps> = ({
                 borderRadius: "4px",
               }}
             >
-              <option value="">Select a guild (optional)</option>
+              <option value="">Select a guild</option>
               {OFFICIAL_GUILDS.map((guild) => (
                 <option key={guild.id.toString()} value={guild.id.toString()}>
                   {guild.name}
@@ -307,7 +307,7 @@ const PlayerCreationProgress: React.FC<PlayerCreationProgressProps> = ({
                 textAlign: "left",
               }}
             >
-              Profile Picture (optional)
+              Player profile picture (optional)
             </label>
             <div
               style={{
@@ -385,7 +385,7 @@ const PlayerCreationProgress: React.FC<PlayerCreationProgressProps> = ({
                   : isCreatingTriples
                   ? "Creating triples..."
                   : "Creating in progress..."
-                : "CREATE YOUR PLAYER"}
+                : "VALIDATE"}
             </button>
           </div>
         </>
