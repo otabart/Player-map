@@ -28,7 +28,7 @@ export const SubmitButton: React.FC<SubmitButtonProps> = ({
         style={{
           backgroundColor: totalUnits > 0 && !isSubmitting && !isDepositLoading 
             ? "#1976d2" 
-            : "#10172d",
+            : "rgb(105, 105, 105)",
           color: "#FFF",
           padding: "12px 30px",
           border: "none",

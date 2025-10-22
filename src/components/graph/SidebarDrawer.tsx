@@ -15,12 +15,12 @@ export default function SidebarDrawer({
     <div
       style={{
         position: "absolute",
-        top: "15%",
+        top: "25%",
         left: "5px",
-        height: "60%",
+        height: "70%",
         width: open ? "28.67vw" : 0,
         minWidth: open ? "350px" : 0,
-        backgroundColor: "rgba(255,255,255,0.05)",
+        backgroundColor: "rgba(0, 0, 0, 0.85)",
         borderRadius: 18,
         transition: "width 0.35s cubic-bezier(0.4, 1.3, 0.5, 1)",
         zIndex: 1300,
@@ -51,7 +51,7 @@ export default function SidebarDrawer({
           <div
             style={{
               padding: "24px",
-
+              overflowY: "auto",
               height: "100%",
             }}
           >

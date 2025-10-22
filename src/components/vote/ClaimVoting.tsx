@@ -155,14 +155,14 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
     return (
       <div
         style={{
-          backgroundColor: "#070b1a",
-          minHeight: "50vh",
+          backgroundColor: "rgba(0, 0, 0, 0.85)",
+          minHeight: "100%",
           opacity: "0.9",
           color: "#fff",
           padding: "15px",
-          border: "1px solid #1e3b70",
+          border: "1px solid rgb(105, 105, 105)",
           borderRadius: "8px",
-          maxWidth: "960px",
+          maxWidth: "100%",
           margin: "0 auto",
           position: "relative",
           boxShadow: "0 4px 15px rgba(0, 0, 0, 0.3)",
@@ -181,13 +181,13 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
     return (
       <div
         style={{
-          backgroundColor: "#070b1a",
-          minHeight: "50vh",
+          backgroundColor: "rgba(0, 0, 0, 0.85)",
+          minHeight: "100%",
           color: "#fff",
           padding: "15px",
-          border: "1px solid #1e3b70",
+          border: "1px solid rgb(105, 105, 105)",
           borderRadius: "8px",
-          maxWidth: "960px",
+          maxWidth: "100%",
           margin: "0 auto",
           position: "relative",
           boxShadow: "0 4px 15px rgba(0, 0, 0, 0.3)",
@@ -216,14 +216,14 @@ export const ClaimVoting: React.FC<ClaimVotingProps> = ({
   return (
     <div
       style={{
-        backgroundColor: "#070b1a",
-        minHeight: "50vh",
+        backgroundColor: "rgba(0, 0, 0, 0.85)",
+        minHeight: "100%",
         opacity: "0.9",
         color: "#fff",
         padding: "15px",
-        border: "1px solid #1e3b70",
+        border: "1px solid rgb(105, 105, 105)",
         borderRadius: "8px",
-        maxWidth: "960px",
+        maxWidth: "100%",
         margin: "0 auto",
         position: "relative",
         boxShadow: "0 4px 15px rgba(0, 0, 0, 0.3)",

@@ -144,9 +144,10 @@ export const useDepositTriple = ({
         }
 
         // Calculate value in wei
-        // Convert decimal units (0.001) to integer units (1) before BigInt
-        const unitsInInteger = Math.round(vote.units * 1000); // 0.001 -> 1
-        const depositValue = UNIT_VALUE * BigInt(unitsInInteger);
+        const calculation = Number(UNIT_VALUE) * vote.units;
+        const roundedCalculation = Math.round(calculation);
+        // Direct calculation like in vote/ClaimItem.tsx
+        const depositValue = BigInt(roundedCalculation);
 
         // Add to arrays
         termIds.push(targetId as `0x${string}`);

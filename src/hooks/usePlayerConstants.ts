@@ -18,12 +18,6 @@ export const usePlayerConstants = (config?: PlayerMapConfig): DefaultPlayerMapCo
     }
 
     // Sinon, utiliser les constantes par défaut
-    console.log('🔧 PlayerMap: Using DEFAULT constants from Player-map', {
-      COMMON_IDS: DEFAULT_CONSTANTS.COMMON_IDS,
-      PLAYER_TRIPLE_TYPES: DEFAULT_CONSTANTS.PLAYER_TRIPLE_TYPES,
-      OFFICIAL_GUILDS: DEFAULT_CONSTANTS.OFFICIAL_GUILDS,
-      PREDEFINED_CLAIM_IDS: DEFAULT_CONSTANTS.PREDEFINED_CLAIM_IDS
-    });
     return {
       ...DEFAULT_CONSTANTS,
       UNIT_VALUE

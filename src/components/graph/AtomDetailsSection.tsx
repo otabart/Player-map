@@ -50,7 +50,7 @@ const AtomDetailsSection: React.FC<AtomDetailsSectionProps> = ({
         </div>
 
         <div className="flex-col w-full h-[70px] gap-2 text-[#D9D9D9] border-b-1 border-[#D9D9D9] overflow-y-auto">
-          <p><strong>ID / Description :</strong> <br />{
+          <p><strong>UID / Description :</strong> <br />{
           atomDetails.value?.person?.description ||
           atomDetails.value?.organization?.description ||
           atomDetails.value?.thing?.description ||

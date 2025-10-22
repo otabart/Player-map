@@ -38,7 +38,7 @@ const DirectPositionCheck: React.FC = () => {
 
   // Dummy handler for ClaimItem
   const handleChangeUnits = (id: bigint, direction: VoteDirection, units: number) => {
-    console.log('Changed units:', { id: id.toString(), direction, units });
+    // Handle units change
   };
 
   return (

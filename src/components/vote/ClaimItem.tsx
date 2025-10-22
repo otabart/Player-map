@@ -152,11 +152,14 @@ export const ClaimItem: React.FC<ClaimItemProps> = ({
         padding: "20px",
         marginBottom: "20px",
         borderRadius: "8px",
-        backgroundColor: "#0c1228",
+        backgroundColor: "rgba(0, 0, 0, 0.85)",
         position: "relative",
-        border: hasUserPosition ? 
-          (userPositionDirection === VoteDirection.For ? "2px solid #4CAF50" : "2px solid #F44336") :
-          "1px solid #1e3b70",
+        borderBottom: hasUserPosition ? 
+          (userPositionDirection === VoteDirection.For ? "12px solid #006FE8" : "12px solid #FF9500") :
+          "1px solid rgb(105, 105, 105)",
+        borderTop: "1px solid rgb(105, 105, 105)",
+        borderLeft: "1px solid rgb(105, 105, 105)",
+        borderRight: "1px solid rgb(105, 105, 105)",
         boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
       }}
     >

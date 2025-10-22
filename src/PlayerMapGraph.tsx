@@ -6,6 +6,7 @@ import {
 import { SidebarDrawer, AtomDetailsSection, ClaimsSection, PositionsSection, ActivitySection } from "./components/graph";
 import { FaUser, FaVoteYea } from "react-icons/fa";
 import Atom from "./assets/img/atom.svg";
+import IntuitionLogo from "./assets/img/Intuition-logo.svg";
 import { useSidebarData } from "./hooks/useSidebarData";
 import { useSelectedAtomData } from "./hooks/useSelectedAtomData";
 import { useSelectedAtomClaims } from "./hooks/useSelectedAtomClaims";
@@ -191,7 +192,7 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
         style={{
           position: "absolute",
           bottom: "50%",
-          right: "18px",
+          right: "5px",
           zIndex: 50,
         }}
       >
@@ -212,8 +213,48 @@ const PlayerMapGraph: React.FC<PlayerMapGraphProps> = ({ walletAddress, walletCo
           onMouseEnter={() => setHovered("vote")}
           onMouseLeave={() => setHovered("")}
         >
-          <img src={Atom} alt="Atom" style={{ width: "44px", marginRight: "4px" }} />SPEAK UP
+          <img src={Atom} alt="Atom" style={{ width: "44px" }} />SPEAK UP
         </button>
+      </div>
+
+      {/* Logo Intuition en bas à gauche */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: "5px",
+          left: "5px",
+          opacity: 0.4,
+          zIndex: 50,
+        }}
+      >
+        <a
+          href="https://portal.intuition.systems/"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "block",
+            textDecoration: "none",
+            transition: "opacity 0.2s, transform 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.opacity = "0.8";
+            e.currentTarget.style.transform = "scale(1.05)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.opacity = "1";
+            e.currentTarget.style.transform = "scale(1)";
+          }}
+        >
+          <img 
+            src={IntuitionLogo} 
+            alt="Intuition Systems" 
+            style={{ 
+              height: "30px",
+              width: "auto",
+              cursor: "pointer"
+            }} 
+          />
+        </a>
       </div>
 
       {/* Overlay pour le clic en dehors de la sidebar */}
