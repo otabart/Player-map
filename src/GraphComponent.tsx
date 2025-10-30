@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { Network, API_URLS } from "./hooks/useAtomData";
 import { useTripleByCreator } from "./hooks/useTripleByCreator";
 import { fetchPositions } from "./api/fetchPositions";
@@ -58,6 +58,10 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
   // État pour les positions actives
   const [activePositions, setActivePositions] = useState<any[]>([]);
   const [positionsLoading, setPositionsLoading] = useState(false);
+  const [positionsError, setPositionsError] = useState<Error | null>(null);
+  const lastFetchAttemptRef = useRef<number>(0);
+  const last429ErrorRef = useRef<number>(0);
+  const isFetchingRef = useRef<boolean>(false);
 
   const lowerCaseAddress = walletAddress ? walletAddress : "";
 
@@ -71,46 +75,198 @@ const GraphComponent: React.FC<GraphComponentProps> = ({
   const {
     loading: tripleLoading,
     error: tripleError,
-    triples: playerTriples,
+    triples: playerTriplesRaw,
   } = useTripleByCreator(lowerCaseAddress, constants.PLAYER_TRIPLE_TYPES.PLAYER_GAME.predicateId, constants.PLAYER_TRIPLE_TYPES.PLAYER_GAME.objectId, network);
+
+  // Mémoriser playerTriples avec une clé stable basée sur term_id pour éviter les re-renders inutiles
+  const playerTriples = useMemo(() => {
+    if (!playerTriplesRaw || playerTriplesRaw.length === 0) {
+      return [];
+    }
+    // Créer une clé stable basée sur les term_id triés
+    return [...playerTriplesRaw];
+  }, [playerTriplesRaw]);
+
+  // Créer une clé stable pour les playerTriples players (pour la dépendance useEffect)
+  const playerTriplesKey = useMemo(() => {
+    if (!playerTriples || playerTriples.length === 0) {
+      return "";
+    }
+    const playerGameTriples = playerTriples.filter(triple => 
+      triple.predicate_id === constants.PLAYER_TRIPLE_TYPES.PLAYER_GAME.predicateId
+      && triple.object_id === constants.PLAYER_TRIPLE_TYPES.PLAYER_GAME.objectId
+    );
+    return playerGameTriples.map(t => t.term_id).sort().join(",");
+  }, [playerTriples, constants.PLAYER_TRIPLE_TYPES.PLAYER_GAME.predicateId, constants.PLAYER_TRIPLE_TYPES.PLAYER_GAME.objectId]);
 
   // Récupérer les positions actives quand le wallet est connecté
   useEffect(() => {
     const fetchActivePositions = async () => {
+      // Guard 1: Vérifier les conditions de base
       if (!isWalletReady || !walletAddress) {
+        setActivePositions([]);
+        setPositionsError(null);
+        return;
+      }
+
+      // Guard 2: Ne pas fetch si on est déjà en train de charger
+      if (isFetchingRef.current) {
+        return;
+      }
+
+      // Guard 3: Ne pas fetch si on a eu une erreur 429 il y a moins de 30 secondes
+      const now = Date.now();
+      const timeSinceLast429 = now - last429ErrorRef.current;
+      if (timeSinceLast429 < 30000) {
+        console.warn('[GraphComponent] Skip fetch: Too many requests recently (429 error)');
+        return;
+      }
+
+      // Guard 4: Ne pas fetch si les triples ne sont pas encore chargés ou en erreur
+      if (tripleLoading || tripleError) {
+        return;
+      }
+
+      // Guard 5: Ne pas fetch si pas de triples (évite une requête inutile)
+      if (!playerTriples || playerTriples.length === 0) {
         setActivePositions([]);
         return;
       }
 
+      // Guard 6: Éviter les fetches trop fréquents (débounce)
+      const timeSinceLastFetch = now - lastFetchAttemptRef.current;
+      if (timeSinceLastFetch < 1000) {
+        console.warn('[GraphComponent] Skip fetch: Too frequent requests');
+        return;
+      }
+
+      lastFetchAttemptRef.current = now;
+      isFetchingRef.current = true;
       setPositionsLoading(true);
+      setPositionsError(null);
+
       try {
-        const allPositions = await fetchPositions(walletAddress, network);
-        
-        // Filtrer les positions pour ne garder que celles sur les triples joueur "is player of"
-        // Trouver TOUS les triples avec le bon prédicat (is player of)
+        // Filtrer les triples pour ne garder que ceux avec "is player of" + "Boss Fighters"
         const playerGameTriples = playerTriples.filter(triple => 
           triple.predicate_id === constants.PLAYER_TRIPLE_TYPES.PLAYER_GAME.predicateId
           && triple.object_id === constants.PLAYER_TRIPLE_TYPES.PLAYER_GAME.objectId
         );
         const playerTripleTermIds = playerGameTriples.map(triple => triple.term_id);
         
-        const gamePositions = allPositions.filter((position: any) => {
-          // Vérifier si la position est sur UN DES termes des triples joueur
-          const matches = playerTripleTermIds.includes(position.term?.id);
-          return matches;
+        // Si pas de triples joueur, pas besoin de chercher les positions
+        if (playerTripleTermIds.length === 0) {
+          setActivePositions([]);
+          return;
+        }
+        
+        // Faire une requête GraphQL filtrée directement sur les term_id des triples joueur
+        const apiUrl = API_URLS[network];
+        
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: `
+              query GetPlayerPositions($accountId: String!, $termIds: [String!]!) {
+                positions(where: { 
+                  account_id: { _eq: $accountId },
+                  term_id: { _in: $termIds },
+                  shares: { _gt: 0 }
+                }) {
+                  id
+                  shares
+                  curve_id
+                  account {
+                    id
+                    label
+                    image
+                    atom_id
+                    type
+                  }
+                  term {
+                    id
+                    total_market_cap
+                    total_assets
+                    atom {
+                      label
+                    }
+                    triple {
+                      subject {
+                        label
+                      }
+                      predicate {
+                        label
+                      }
+                      object {
+                        label
+                      }
+                      counter_term {
+                        id
+                        total_market_cap
+                        total_assets
+                        atom {
+                          label
+                        }
+                        triple {
+                          subject {
+                            label
+                          }
+                          predicate {
+                            label
+                          }
+                          object {
+                            label
+                          }
+                        }
+                      }
+                    }
+                  }
+                  vault {
+                    deposits {
+                      vault_type
+                    }
+                    redemptions {
+                      vault_type
+                    }
+                  }
+                }
+              }
+            `,
+            variables: { 
+              accountId: walletAddress,
+              termIds: playerTripleTermIds
+            }
+          })
         });
         
+        const result = await response.json();
+        
+        if (result.errors) {
+          console.error('[GraphComponent] GraphQL errors:', result.errors);
+          throw new Error(result.errors[0]?.message || 'GraphQL error');
+        }
+        
+        const gamePositions = result.data?.positions || [];
         setActivePositions(gamePositions);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching positions:', error);
-        setActivePositions([]);
+        
+        // Si c'est une erreur 429, enregistrer le timestamp et ne pas re-fetch pendant 30 secondes
+        if (error?.message?.includes('429') || error?.status === 429 || error?.response?.status === 429) {
+          last429ErrorRef.current = Date.now();
+          console.warn('[GraphComponent] Rate limit hit (429), will retry after 30 seconds');
+        }
+        
+        setPositionsError(error);
+        // Ne pas vider activePositions en cas d'erreur pour garder les données précédentes
       } finally {
+        isFetchingRef.current = false;
         setPositionsLoading(false);
       }
     };
 
     fetchActivePositions();
-  }, [isWalletReady, walletAddress, network, playerTriples]);
+  }, [isWalletReady, walletAddress, network, playerTriplesKey, tripleLoading, tripleError]);
 
   // Vérifie si l'utilisateur a un player atom ET des positions actives
   const hasPlayerAtom = playerTriples.length > 0;
