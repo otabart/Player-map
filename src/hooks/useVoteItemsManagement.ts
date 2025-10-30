@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { VoteItem, VoteDirection } from "../types/vote";
 import { DefaultPlayerMapConstants } from "../types/PlayerMapConfig";
-import { Network } from "./useAtomData";
+import { Network, API_URLS } from "./useAtomData";
 import { useFetchTripleDetails, TripleDetails } from "./useFetchTripleDetails";
-import { useDisplayTriplesWithPosition } from "./useDisplayTriplesWithPosition";
 
 interface UseVoteItemsManagementProps {
   network?: Network;
@@ -25,6 +24,7 @@ export const useVoteItemsManagement = ({
   const { PREDEFINED_CLAIM_IDS } = constants;
   const [totalUnits, setTotalUnits] = useState(0);
   const [userPositions, setUserPositions] = useState<Record<string, VoteDirection>>({});
+  const [hasLoadedTripleDetails, setHasLoadedTripleDetails] = useState(false); // Flag pour éviter les re-loads multiples
 
   // Use our hook for fetching triple details
   const { fetchTripleDetails, isLoading: isFetchingTriple } = useFetchTripleDetails({
@@ -32,8 +32,106 @@ export const useVoteItemsManagement = ({
     onError
   });
 
-  // Fetch user's existing positions
-  const { data: userPositionsData, loading: loadingPositions } = useDisplayTriplesWithPosition(walletAddress);
+  // Fetch user's existing positions - OPTIMISÉ avec batch fetch pour tous les PREDEFINED_CLAIM_IDS
+  const [userPositionsData, setUserPositionsData] = useState<any>(null);
+  const [loadingPositions, setLoadingPositions] = useState<boolean>(true);
+
+  // Batch fetch des positions utilisateur pour tous les PREDEFINED_CLAIM_IDS (une seule requête)
+  useEffect(() => {
+    const fetchUserPositionsBatch = async () => {
+      if (!walletAddress || !PREDEFINED_CLAIM_IDS || PREDEFINED_CLAIM_IDS.length === 0) {
+        setLoadingPositions(false);
+        return;
+      }
+
+      try {
+        setLoadingPositions(true);
+        const apiUrl = API_URLS[network];
+        
+        // Utiliser la même logique que useCheckSpecificTriplePosition mais en batch
+        const query = `
+          query BatchUserPositions($tripleIds: [String!]!, $walletAddress: String!) {
+            triples(where: { term_id: { _in: $tripleIds } }) {
+              term_id
+              term {
+                id
+                positions_aggregate(where: {account: {id: {_ilike: $walletAddress}}, shares: {_gt: 0}}) {
+                  aggregate {
+                    count
+                  }
+                  nodes {
+                    id
+                  }
+                }
+              }
+              counter_term {
+                id
+                positions_aggregate(where: {account: {id: {_ilike: $walletAddress}}, shares: {_gt: 0}}) {
+                  aggregate {
+                    count
+                  }
+                  nodes {
+                    id
+                  }
+                }
+              }
+            }
+          }
+        `;
+
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query,
+            variables: {
+              tripleIds: PREDEFINED_CLAIM_IDS.map(id => id.toString()),
+              walletAddress: walletAddress.toLowerCase()
+            }
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`GraphQL request failed with status ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.errors) {
+          console.error("GraphQL Errors:", result.errors);
+          throw new Error(result.errors[0].message);
+        }
+
+        // Traiter les résultats avec la même logique que useCheckSpecificTriplePosition
+        const positionsData: any = { triples: [] };
+        
+        (result.data?.triples || []).forEach((triple: any) => {
+          const hasTermPositions = triple.term?.positions_aggregate?.aggregate?.count > 0 || 
+                                   triple.term?.positions_aggregate?.nodes?.length > 0;
+          const hasCounterTermPositions = triple.counter_term?.positions_aggregate?.aggregate?.count > 0 || 
+                                         triple.counter_term?.positions_aggregate?.nodes?.length > 0;
+          
+          positionsData.triples.push({
+            term_id: triple.term_id,
+            id: triple.term_id,
+            hasTermPosition: hasTermPositions,
+            hasCounterTermPosition: hasCounterTermPositions,
+            term: triple.term,
+            counter_term: triple.counter_term
+          });
+        });
+
+        setUserPositionsData(positionsData);
+      } catch (err) {
+        console.error("Erreur lors de la récupération des positions utilisateur:", err);
+        setUserPositionsData(null);
+      } finally {
+        setLoadingPositions(false);
+      }
+    };
+
+    fetchUserPositionsBatch();
+  }, [walletAddress, PREDEFINED_CLAIM_IDS.join(','), network]);
 
   // Process user positions data when it arrives
   useEffect(() => {
@@ -56,48 +154,42 @@ export const useVoteItemsManagement = ({
         });
       }
 
-      // Méthode 2: Rechercher dans le format triples avec positions imbriquées
+      // Méthode 2: Rechercher dans le format triples avec positions imbriquées (format batch optimisé)
       if (userPositionsData.triples && Array.isArray(userPositionsData.triples)) {
         userPositionsData.triples.forEach((triple: any) => {
-          if (!triple.id) {
+          // Utiliser term_id (venant du batch) ou id (fallback pour compatibilité)
+          const tripleId = triple.term_id || triple.id;
+          if (!tripleId) {
             return;
           }
 
-          // Structure 1: Positions directement dans le triple
-          if (triple.positions && Array.isArray(triple.positions)) {
-            const userPosition = triple.positions.find((pos: any) =>
-              pos.account?.id?.toLowerCase() === walletAddress.toLowerCase()
-            );
-
-            if (userPosition) {
-              // Déterminer la direction en fonction de la structure
-              if (userPosition.is_for !== undefined) {
-                positions[String(triple.id)] = userPosition.is_for ? VoteDirection.For : VoteDirection.Against;
-              } else if (userPosition.term_id && triple.term_id === userPosition.term_id) {
-                positions[String(triple.id)] = VoteDirection.For;
-              } else if (userPosition.term_id && triple.counter_term_id === userPosition.term_id) {
-                positions[String(triple.id)] = VoteDirection.Against;
-              }
-            }
+          // Utiliser la logique de useCheckSpecificTriplePosition : vérifier hasTermPosition et hasCounterTermPosition
+          // qui viennent directement de la requête batch optimisée
+          if (triple.hasTermPosition) {
+            positions[String(tripleId)] = VoteDirection.For;
+          } else if (triple.hasCounterTermPosition) {
+            positions[String(tripleId)] = VoteDirection.Against;
           }
 
-          // Structure 2: Positions dans les vaults
-          const termPositions = triple.term?.positions || [];
-          const counterTermPositions = triple.counter_term?.positions || [];
-
-          // Check if user has a position in either vault
-          const userTermPosition = termPositions.find((position: any) => {
-            return position.account?.id?.toLowerCase() === walletAddress.toLowerCase();
-          });
-
-          const userCounterTermPosition = counterTermPositions.find((position: any) => {
-            return position.account?.id?.toLowerCase() === walletAddress.toLowerCase();
-          });
-
-          if (userTermPosition) {
-            positions[String(triple.id)] = VoteDirection.For;
-          } else if (userCounterTermPosition) {
-            positions[String(triple.id)] = VoteDirection.Against;
+          // Fallback pour compatibilité avec ancien format (si les données viennent d'ailleurs)
+          if (!triple.hasTermPosition && !triple.hasCounterTermPosition) {
+            // Vérifier dans les positions imbriquées si disponibles
+            const termPositions = triple.term?.positions || [];
+            const counterTermPositions = triple.counter_term?.positions || [];
+            
+            const userTermPosition = termPositions.find((position: any) => {
+              return position.account?.id?.toLowerCase() === walletAddress.toLowerCase();
+            });
+            
+            const userCounterTermPosition = counterTermPositions.find((position: any) => {
+              return position.account?.id?.toLowerCase() === walletAddress.toLowerCase();
+            });
+            
+            if (userTermPosition) {
+              positions[String(tripleId)] = VoteDirection.For;
+            } else if (userCounterTermPosition) {
+              positions[String(tripleId)] = VoteDirection.Against;
+            }
           }
         });
       }
@@ -121,29 +213,37 @@ export const useVoteItemsManagement = ({
 
       setUserPositions(positions);
 
-      // Update existing vote items with user position information
-      setVoteItems(prevItems =>
-        prevItems.map(item => {
-          const positionDirection = positions[String(item.id)] || VoteDirection.None;
+      // Update existing vote items with user position information (si déjà chargés)
+      setVoteItems(prevItems => {
+        if (prevItems.length === 0) return prevItems; // Si pas encore chargés, ne pas les mettre à jour
+        
+        return prevItems.map(item => {
+          // Essayer plusieurs formats d'ID pour correspondance : term_id (plus fiable) ou id brut
+          const normalizedItemId = item.term_id || String(item.id);
+          const positionDirection = positions[normalizedItemId] || 
+                                   positions[String(item.id)] || 
+                                   VoteDirection.None;
           const hasPosition = positionDirection !== VoteDirection.None;
           return {
             ...item,
             userHasPosition: hasPosition,
             userPositionDirection: positionDirection
           };
-        })
-      );
-    }
-  }, [userPositionsData, loadingPositions, walletAddress]);
+        });
+      });
 
-  // Load triple details when hook is initialized
-  useEffect(() => {
-    try {
-      loadTripleDetails();
-    } catch (error) {
-      console.error("Error in loadTripleDetails:", error);
+      // Appeler loadTripleDetails directement ici avec les positions mises à jour
+      // pour éviter le problème de timing entre les useEffect
+      if (!hasLoadedTripleDetails) {
+        loadTripleDetails(positions).then(() => {
+          setHasLoadedTripleDetails(true);
+        }).catch((error) => {
+          console.error("Error in loadTripleDetails:", error);
+        });
+      }
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userPositionsData, loadingPositions, walletAddress, hasLoadedTripleDetails]); // hasLoadedTripleDetails dans les deps pour éviter double appel
 
   // Update total units when voteItems change
   useEffect(() => {
@@ -151,13 +251,124 @@ export const useVoteItemsManagement = ({
     setTotalUnits(total);
   }, [voteItems]);
 
-  // Function to load triple details from the blockchain
-  const loadTripleDetails = async () => {
+  // Batch fetch function - créée localement pour ne pas modifier les hooks
+  const fetchTriplesDetailsBatch = async (tripleIds: string[]): Promise<Map<string, TripleDetails | null>> => {
+    if (tripleIds.length === 0) {
+      return new Map<string, TripleDetails | null>();
+    }
+
+    try {
+      const apiUrl = API_URLS[network];
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: `
+          query BatchTriples($tripleIds: [String!]!) {
+            triples(where: { term_id: { _in: $tripleIds } }) {
+              term_id
+              subject_id
+              predicate_id
+              object_id
+              subject {
+                term_id
+                label
+              }
+              predicate {
+                term_id
+                label
+              }
+              object {
+                term_id
+                label
+              }
+              term {
+                total_market_cap
+                total_assets
+                positions_aggregate {
+                  aggregate {
+                    count
+                  }
+                }
+              }
+              counter_term_id
+              counter_term {
+                total_market_cap
+                total_assets
+                positions_aggregate {
+                  aggregate {
+                    count
+                  }
+                }
+              }
+            }
+          }
+        `,
+          variables: { tripleIds: tripleIds.map(id => id.toString()) },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`GraphQL request failed with status ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      if (result.errors) {
+        throw new Error(`GraphQL errors: ${JSON.stringify(result.errors)}`);
+      }
+
+      const results = new Map<string, TripleDetails | null>();
+      (result.data?.triples || []).forEach((triple: any) => {
+        const termPositionCount = triple.term?.positions_aggregate?.aggregate?.count || 0;
+        const counterTermPositionCount = triple.counter_term?.positions_aggregate?.aggregate?.count || 0;
+
+        results.set(triple.term_id, {
+          id: triple.term_id,
+          subject: triple.subject,
+          predicate: triple.predicate,
+          object: triple.object,
+          term_id: triple.term_id,
+          counter_term_id: triple.counter_term_id,
+          term_position_count: termPositionCount,
+          counter_term_position_count: counterTermPositionCount
+        });
+      });
+
+      // Mark missing triples as null
+      tripleIds.forEach(id => {
+        if (!results.has(id)) {
+          results.set(id, null);
+        }
+      });
+
+      return results;
+    } catch (error) {
+      const results = new Map<string, TripleDetails | null>();
+      tripleIds.forEach(id => {
+        results.set(id, null);
+      });
+      if (onError) {
+        onError(`Error fetching batch triple details: ${error instanceof Error ? error.message : String(error)}`);
+      }
+      return results;
+    }
+  };
+
+  // Function to load triple details from the blockchain - OPTIMISÉ avec batch fetch
+  const loadTripleDetails = async (currentUserPositions?: Record<string, VoteDirection>) => {
     setIsLoading(true);
 
     try {
-      const triplesPromises = PREDEFINED_CLAIM_IDS.map(async (id) => {
-        const details = await fetchTripleDetails(id);
+      // ÉTAPE 1: Fetch tous les détails en une seule requête batch (au lieu de 29 requêtes individuelles)
+      const triplesDetailsMap = await fetchTriplesDetailsBatch(PREDEFINED_CLAIM_IDS);
+
+      // Utiliser currentUserPositions si fourni, sinon utiliser le state userPositions
+      const positionsToUse = currentUserPositions || userPositions;
+
+      // ÉTAPE 2: Transformer les résultats en VoteItems
+      const loadedItems: VoteItem[] = PREDEFINED_CLAIM_IDS.map((id) => {
+        const details = triplesDetailsMap.get(id);
 
         if (!details) {
           return {
@@ -173,7 +384,23 @@ export const useVoteItemsManagement = ({
         }
 
         // Check if user has a position on this triple
-        const userPositionDirection = userPositions[String(id)] || VoteDirection.None;
+        // Normaliser les IDs pour correspondance : utiliser term_id du details (plus fiable)
+        const normalizedId = details.term_id || String(id);
+        const userPositionDirection = positionsToUse[normalizedId] || 
+                                     positionsToUse[String(id)] || 
+                                     VoteDirection.None;
+
+        // Debug pour tous les triples avec positions
+        if (userPositionDirection !== VoteDirection.None) {
+          console.log(`[loadTripleDetails] Triple ${normalizedId} a une position:`, userPositionDirection);
+        }
+        
+        // Debug pour voir tous les IDs disponibles dans positionsToUse
+        if (normalizedId === "0x27191de92fe0308355319ec8f2359e5ce85123bd243bf7ffa6eb8028347b3eab") {
+          console.log(`[loadTripleDetails] Triple recherché: ${normalizedId}`);
+          console.log(`[loadTripleDetails] positionsToUse keys:`, Object.keys(positionsToUse));
+          console.log(`[loadTripleDetails] Trouvé dans positionsToUse:`, positionsToUse[normalizedId]);
+        }
 
         return {
           id: BigInt(details.id),
@@ -190,8 +417,6 @@ export const useVoteItemsManagement = ({
           userPositionDirection,
         } as VoteItem;
       });
-
-      const loadedItems = await Promise.all(triplesPromises);
 
       const allFailed = loadedItems.every(item => item.object === "Unknown");
       if (allFailed && onError) {

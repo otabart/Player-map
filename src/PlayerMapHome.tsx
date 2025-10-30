@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import IntuitionLogo from "./assets/img/logo.svg";
+import Atom from "./assets/img/atom.svg";
 
 interface PlayerMapHomeProps {
   walletConnected?: any;
@@ -20,6 +21,7 @@ const PlayerMapHome: React.FC<PlayerMapHomeProps> = ({
   isOpen: externalIsOpen,
   onCreatePlayer,
 }) => {
+
   // Vérifier si l'utilisateur a un wallet connecté pour l'affichage conditionnel
   const isUserConnected = walletConnected && (walletAddress || (walletConnected.account && walletConnected.account.address));
 
@@ -31,32 +33,18 @@ const PlayerMapHome: React.FC<PlayerMapHomeProps> = ({
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: "#101020",
-        color: "#fff",
-        padding: "20px",
-        textAlign: "center",
-        border: "4px solid #0078D4",
-        borderRadius: "5px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        maxWidth: "960px",
-        margin: "0 auto",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      {/* Lignes horizontales bleues en haut et bas */}
+    <div className="relative flex flex-col w-full items-center py-6">
+      {/* Lignes horizontales en haut et bas */}
       <div
         style={{
           position: "absolute",
           top: "0",
           left: "0",
           width: "100%",
-          height: "4px",
-          backgroundColor: "#0078D4",
+          height: "20px",
+          backgroundColor: "#FFD32A",
+          borderTopLeftRadius: "20px",
+          borderTopRightRadius: "20px",
         }}
       />
       <div
@@ -65,106 +53,88 @@ const PlayerMapHome: React.FC<PlayerMapHomeProps> = ({
           bottom: "0",
           left: "0",
           width: "100%",
-          height: "4px",
-          backgroundColor: "#0078D4",
+          height: "20px",
+          backgroundColor: "#FFD32A",
+          borderBottomLeftRadius: "20px",
+          borderBottomRightRadius: "20px",
         }}
       />
 
       <img
         src={IntuitionLogo}
         alt="Intuition Logo"
-        style={{ width: "200px", marginBottom: "10px", marginTop: "20px" }}
+        style={{ width: "350px", marginTop: "20px" }}
       />
       <h2
         style={{
-          fontSize: "1.2em",
+          fontSize: "1.0em",
           margin: "0 0 20px 0",
-          color: "#FFD32A", // Couleur orange pour le texte BOSS FIGHTERS
+          color: "#FFD32A",
+          fontWeight: "bold",
         }}
       >
         BOSS FIGHTERS COMMUNITY PLAYER MAP
       </h2>
 
-      <div style={{ maxWidth: "80%", margin: "0 auto" }}>
-        <p style={{ fontSize: "0.9em", lineHeight: "1.5" }}>
+      <div className="flex flex-col gap-2 w-5/6 mx-auto text-base">
+        <p>
           At first, there was nothing. And then, suddenly, the whole community
           appeared !
         </p>
-        <p style={{ fontSize: "0.9em", lineHeight: "1.5" }}>
+        <p>
           Everything of which the Boss Fighters community would one day be
           composed, would be born in an instant.
         </p>
-        <p style={{ fontSize: "0.9em", lineHeight: "1.5" }}>
+        <p>
           A single species of condensed matter, exploding in a vast universe.
         </p>
-        <p style={{ fontSize: "0.9em", lineHeight: "1.5" }}>
+        <p>
           Although energy would neither be created nor destroyed, the
           interaction between these newly-created atoms would continue to create
           something beautiful...
         </p>
-        <p style={{ fontSize: "0.9em", lineHeight: "1.5" }}>
+        <p>
           What had been separate would become whole again. And what would be
           created in the process would be even more beautiful than what came
           before...
         </p>
-        <p style={{ fontSize: "0.9em", lineHeight: "1.5" }}>
+        <p>
           Our story begins with the atom. The cornerstone of our ecosystem.
         </p>
-        <p style={{ fontSize: "0.9em", lineHeight: "1.5" }}>
+        <p>
           And our "atoms" start with you !
-        </p>
-        <p style={{ fontSize: "0.9em", lineHeight: "1.5" }}>
-          Every contribution will help build our ecosystem and make it
-          healthy...
         </p>
       </div>
 
-      <div
-        style={{
-          border: "1px solid #FFD32A",
-          borderRadius: "10px",
-          padding: "15px",
-          margin: "20px 0",
-          display: "inline-block",
-          backgroundColor: "rgba(0, 0, 0, 0.3)",
-          width: "80%",
-          maxWidth: "700px",
-        }}
-      >
-        <p
-          style={{ fontSize: "0.9em", margin: "0 0 10px 0", textAlign: "left" }}
-        >
-          Claims in Intuition, also referred to as "Triples" structured in
+      <div className="flex flex-col gap-2 w-5/6 mx-auto text-base text-left border-2 border-yellow-400 rounded-xl p-4 my-6">
+        <p>
+          <span style={{ color: "#FFD32A" }}>Claims</span> in Intuition, also referred to as <span style={{ color: "#FFD32A" }}>"Triples"</span> structured in
           Semantic Triple format :
         </p>
-        <p
-          style={{ fontSize: "0.9em", margin: "0 0 10px 0", textAlign: "left" }}
-        >
-          [Subject] ⇒ [Predicate] ⇒ [Object] (For example, a triple could be :
+        <p>
+          [<span style={{ color: "#FFD32A" }}>Subject</span>] ⇒ [<span style={{ color: "#FFD32A" }}>Predicate</span>] ⇒ [<span style={{ color: "#FFD32A" }}>Object</span>] (For example, a triple could be :
           [SciFi] [is] [strong Boss])
         </p>
-        <p style={{ fontSize: "0.9em", margin: "0", textAlign: "left" }}>
+        <p>
           This keeps our attestations tidy !
         </p>
       </div>
 
-      <button
+      <div className="flex flex-col items-center gap-2 w-5/6 mx-auto text-base">
+        <p>
+          You need to connect your <span style={{ color: "#FFD32A" }}>wallet (ETH - Base network)</span> and pay <span style={{ color: "#FFD32A" }}>0.0001 ETH (less than $0.40)</span> to create your player !
+        </p>
+
+        <button
+        className="max-w-xs justify-center whitespace-nowrap rounded-md text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 bg-primary text-background shadow hover:bg-primary/90 font-bold uppercase h-12 px-4 py-2 flex items-center transition-transform duration-200 hover:scale-105 mt-4 mb-8"
         onClick={handleCreatePlayer}
-        style={{
-          marginTop: "20px",
-          marginBottom: "20px",
-          padding: "10px 20px",
-          backgroundColor: "#FFD32A",
-          color: "#000",
-          border: "none",
-          cursor: "pointer",
-          borderRadius: "5px",
-          fontSize: "1em",
-          fontWeight: "bold",
-        }}
       >
-        CREATE YOUR PLAYER
+        <img src={Atom} alt="Atom" style={{ width: "44px", marginRight: "10px" }} />CREATE YOUR PLAYER
       </button>
+      
+      </div>
+
+      
     </div>
   );
 };

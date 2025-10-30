@@ -56,7 +56,6 @@ export const useNetworkCheck = ({ walletConnected, publicClient }: UseNetworkChe
     if (!walletConnected) return;
 
     try {
-      console.log('Attempting switchChain with chainId:', targetChainId);
       await walletConnected.switchChain({ chainId: targetChainId });
     } catch (error) {
       console.error('Error switching network:', error);
@@ -64,10 +63,7 @@ export const useNetworkCheck = ({ walletConnected, publicClient }: UseNetworkChe
 
       if (walletError.code === 4902) {
         try {
-          console.log('Network not found, attempting to add it');
           await walletConnected.addChain(INTUITION_TESTNET_CONFIG);
-
-          console.log('Network added, attempting switch again');
           await walletConnected.switchChain({ chainId: targetChainId });
         } catch (addError) {
           console.error('Error adding Intuition network:', addError);

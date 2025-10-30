@@ -50,7 +50,8 @@ const VotingModal: React.FC<VotingModalProps> = ({
           height: '700px',
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          opacity: 0.85
         }}
       >
         <div style={{ 

@@ -115,7 +115,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
         const data = await response.json();
         const logs = data.result || [];
         
-        console.log("Found logs:", logs.length);
         setHasExistingAtom(logs.length > 0);
       } catch (error) {
         console.error("Error checking atom ownership:", error);
@@ -174,7 +173,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
       return;
     }
 
-    if (!formData.pseudo || !formData.userId) {
+    if (!formData.pseudo) {
       alert("Please fill in all fields");
       return;
     }

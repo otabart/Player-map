@@ -47,19 +47,6 @@ const ClaimDepositControls: React.FC<ClaimDepositControlsProps> = ({
           pos.term?.id === claim.counter_term?.id && pos.shares > 0
         );
 
-        // Debug: Log pour vérifier
-        console.log('🔍 ClaimDepositControls Debug:', {
-          claimId: claim.term_id,
-          claimCounterId: claim.counter_term?.id,
-          userPositions: claimPositions.map((p: any) => ({
-            termId: p.term?.id,
-            shares: p.shares,
-            isFor: p.term?.id === claim.term_id,
-            isAgainst: p.term?.id === claim.counter_term?.id
-          })),
-          forPosition,
-          againstPosition
-        });
 
         if (forPosition) {
           setPosition('for');
@@ -132,8 +119,8 @@ const ClaimDepositControls: React.FC<ClaimDepositControlsProps> = ({
       return;
     }
     
-    // Round to 3 decimal places (0.001 steps)
-    const roundedValue = Math.round(numValue * 1000) / 1000;
+    // Keep exact value (no rounding)
+    const roundedValue = numValue;
     setTrust(roundedValue);
     
     // Notify parent component

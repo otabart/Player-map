@@ -12,7 +12,7 @@ export const VotingHeader: React.FC<VotingHeaderProps> = ({ onClose }) => {
         justifyContent: "space-between",
         alignItems: "center",
         marginBottom: "25px",
-        borderBottom: "1px solid #1e3b70",
+        borderBottom: "1px solid rgb(105, 105, 105)",
       }}
     >
       <h2 style={{ fontSize: "1.3em", color: "#FFD32A", margin: 0, fontWeight: "bold" }}>

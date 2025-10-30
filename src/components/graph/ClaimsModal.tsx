@@ -69,14 +69,13 @@ const ClaimsModal: React.FC<ClaimsModalProps> = ({
     try {
       const votes = Object.entries(selectedClaims).map(([claimId, selection]) => ({
         claimId,
-        units: selection.trust,
+        units: selection.trust * 100,
         direction: selection.direction === 'for' ? VoteDirection.For : VoteDirection.Against
       }));
 
       const result = await depositTriple(votes);
       
       if (result.success) {
-        console.log('✅ Deposit successful:', result.hash);
         setSelectedClaims({}); // Clear selections
         // Optionally close modal or show success message
       } else {

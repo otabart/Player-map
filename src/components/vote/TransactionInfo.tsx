@@ -15,13 +15,13 @@ export const TransactionInfo: React.FC<TransactionInfoProps> = ({
   return (
     <div
       style={{
-        backgroundColor: "#10172d",
+        backgroundColor: "rgba(0, 0, 0, 0.85)",
         padding: "10px",
         borderRadius: "8px",
         marginBottom: "25px",
         display: "flex",
         flexDirection: "column",
-        border: "1px solid #1e3b70",
+        border: "1px solid rgb(105, 105, 105)",
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "15px" }}>
